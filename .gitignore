@@ -1,0 +1,17 @@
+# Virtual Environments
+tf_env/
+venv/
+env/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Dataset & Raw Files
+data/
+*.zip
+*.tar.gz
+
+# System Files
+.DS_Store
+Thumbs.db
