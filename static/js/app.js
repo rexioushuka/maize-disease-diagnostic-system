@@ -316,10 +316,97 @@
         });
     }
 
+    function setupIdleLogout() {
+        const body = document.body;
+        if (!body || body.dataset.authenticated !== "1") return;
+
+        const minutes = parseInt(body.dataset.idleTimeout, 10);
+        if (!Number.isFinite(minutes) || minutes <= 0) return;
+
+        const timeoutMs = minutes * 60 * 1000;
+        const checkIntervalMs = 5000;
+        const storageKey = "maize.lastActivity";
+        const logoutUrl = body.dataset.logoutUrl || "/logout";
+        let lastActivity = Date.now();
+        let lastStorageWrite = 0;
+        let redirecting = false;
+
+        function readSharedActivity() {
+            try {
+                return Number(window.localStorage.getItem(storageKey)) || 0;
+            } catch (err) {
+                return 0;
+            }
+        }
+
+        function writeSharedActivity(value) {
+            try {
+                window.localStorage.setItem(storageKey, String(value));
+            } catch (err) {
+                // Storage can be unavailable in private browsing; local timer still works.
+            }
+        }
+
+        function markActivity(force) {
+            const now = Date.now();
+            lastActivity = now;
+            if (force || now - lastStorageWrite > 1000) {
+                lastStorageWrite = now;
+                writeSharedActivity(now);
+            }
+        }
+
+        function latestActivity() {
+            return Math.max(lastActivity, readSharedActivity());
+        }
+
+        function expireSession() {
+            if (redirecting) return;
+            redirecting = true;
+            const separator = logoutUrl.indexOf("?") === -1 ? "?" : "&";
+            window.location.replace(logoutUrl + separator + "reason=idle");
+        }
+
+        function checkIdle() {
+            if (Date.now() - latestActivity() >= timeoutMs) expireSession();
+        }
+
+        ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "pointerdown"]
+            .forEach(function (eventName) {
+                document.addEventListener(eventName, function () {
+                    markActivity(false);
+                }, { passive: true });
+            });
+
+        window.addEventListener("storage", function (event) {
+            if (event.key === storageKey && event.newValue) {
+                const value = Number(event.newValue);
+                if (value > lastActivity) lastActivity = value;
+            }
+        });
+
+        document.addEventListener("visibilitychange", function () {
+            if (!document.hidden) {
+                checkIdle();
+                if (!redirecting) markActivity(false);
+            }
+        });
+
+        window.addEventListener("pageshow", function () {
+            checkIdle();
+            if (!redirecting) markActivity(false);
+        });
+
+        markActivity(true);
+        checkIdle();
+        window.setInterval(checkIdle, checkIntervalMs);
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         setupPhotoGuide();
         setupUpload();
         setupCamera();
         setupFormProgress();
+        setupIdleLogout();
     });
 })();

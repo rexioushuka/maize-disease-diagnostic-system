@@ -11,7 +11,10 @@
 </head>
 <body data-msg-preparing="{{ t('js.image_preparing') }}"
       data-msg-camera-unsupported="{{ t('js.camera_unsupported') }}"
-      data-msg-camera-denied="{{ t('js.camera_denied') }}">
+      data-msg-camera-denied="{{ t('js.camera_denied') }}"
+      data-authenticated="{{ '1' if session.get('user_id') else '0' }}"
+      data-idle-timeout="{{ session_idle_minutes }}"
+      data-logout-url="{{ url_for('logout') }}">
 <nav class="navbar navbar-expand-lg navbar-dark app-nav">
     <div class="container">
         <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">

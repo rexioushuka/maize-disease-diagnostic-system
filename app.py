@@ -327,6 +327,12 @@ def add_security_headers(response):
         response.headers.setdefault(
             "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
         )
+    if session.get("user_id") and request.endpoint != "static":
+        response.headers.setdefault(
+            "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"
+        )
+        response.headers.setdefault("Pragma", "no-cache")
+        response.headers.setdefault("Expires", "0")
     return response
 
 
@@ -338,6 +344,7 @@ def inject_globals():
         "languages": LANGUAGES,
         "csrf_token": csrf_token,
         "current_year": datetime.utcnow().year,
+        "session_idle_minutes": SESSION_IDLE_MINUTES,
     }
 
 
@@ -734,10 +741,17 @@ def login():
 @app.route("/logout")
 def logout():
     user_id = session.get("user_id")
+    idle_timeout = request.args.get("reason") == "idle"
     if user_id:
-        log_event("LOGOUT", "SUCCESS", user_id=user_id)
+        log_event(
+            "LOGOUT",
+            "SUCCESS",
+            user_id=user_id,
+            detail="Session expired after inactivity" if idle_timeout else None,
+        )
     session.clear()
-    flash(t("msg_logged_out"), "info")
+    flash(t("msg_session_expired") if idle_timeout else t("msg_logged_out"),
+          "warning" if idle_timeout else "info")
     return redirect(url_for("login"))
 
 
