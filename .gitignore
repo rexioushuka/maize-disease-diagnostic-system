@@ -12,6 +12,14 @@ data/
 *.zip
 *.tar.gz
 
+# Runtime data
+instance/
+backups/
+static/uploads/
+*.db
+*.db-wal
+*.db-shm
+
 # System Files
 .DS_Store
 Thumbs.db

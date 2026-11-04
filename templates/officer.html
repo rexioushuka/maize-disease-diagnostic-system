@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}{{ t('officer.title') }} - {{ t('app.name') }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">{{ t('officer.title') }}</h3>
+        <p class="text-muted mb-0">{{ t('officer.subtitle') }} &middot; {{ t('app.tagline') }}</p>
+    </div>
+    <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-outline-success fw-semibold">{{ t('officer.new_diagnosis') }}</a>
+</div>
+
+<div class="app-card">
+    <h5 class="fw-bold text-success mb-3">{{ t('officer.filters') }}</h5>
+    <form method="GET" action="{{ url_for('officer_dashboard') }}" class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="date_from">{{ t('officer.from') }}</label>
+            <input type="date" id="date_from" name="date_from" class="form-control" value="{{ filters.date_from }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="date_to">{{ t('officer.to') }}</label>
+            <input type="date" id="date_to" name="date_to" class="form-control" value="{{ filters.date_to }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="class_id">{{ t('officer.class') }}</label>
+            <select id="class_id" name="class_id" class="form-select">
+                <option value="">{{ t('officer.all') }}</option>
+                {% for cls in classes %}
+                <option value="{{ cls.class_id }}" {% if filters.class_id == (cls.class_id|string) %}selected{% endif %}>{{ cls.class_name | class_label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="section_id">{{ t('officer.section') }}</label>
+            <select id="section_id" name="section_id" class="form-select">
+                <option value="">{{ t('officer.all') }}</option>
+                {% for sec in sections %}
+                <option value="{{ sec.section_id }}" {% if filters.section_id == (sec.section_id|string) %}selected{% endif %}>{{ sec.section_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-success fw-semibold">{{ t('officer.apply') }}</button>
+        </div>
+        <div class="col-md-2 d-grid">
+            <a href="{{ url_for('officer_dashboard') }}" class="btn btn-outline-secondary fw-semibold">{{ t('officer.reset') }}</a>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="metric-card">
+            <div class="small text-success fw-bold">{{ t('officer.total_scans') }}</div>
+            <div class="display-6 fw-bold text-dark">{{ total_scans }}</div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="metric-card warning">
+            <div class="small text-warning-emphasis fw-bold">{{ t('officer.outbreaks') }}</div>
+            <div class="display-6 fw-bold text-dark">{{ outbreaks }}</div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12">
+        <div class="metric-card info">
+            <div class="small text-primary fw-bold">{{ t('officer.healthy_cases') }}</div>
+            <div class="display-6 fw-bold text-dark">{{ healthy_cases }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="app-card h-100">
+            <h5 class="fw-bold text-dark mb-3">{{ t('officer.class_breakdown') }}</h5>
+            <canvas id="classChart" height="220" aria-label="{{ t('officer.class_breakdown') }}"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="app-card h-100">
+            <h5 class="fw-bold text-dark mb-3">{{ t('officer.weekly_trend') }}</h5>
+            <canvas id="trendChart" height="220" aria-label="{{ t('officer.weekly_trend') }}"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="app-card h-100">
+            <h5 class="fw-bold text-dark mb-3">{{ t('officer.by_section') }}</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>{{ t('officer.section_name') }}</th>
+                            <th>{{ t('officer.count') }}</th>
+                            <th>{{ t('officer.outbreaks') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in by_section %}
+                        <tr>
+                            <td>{{ t('common.unspecified') if row.section_name == 'Unspecified' else row.section_name }}</td>
+                            <td>{{ row.count }}</td>
+                            <td>{{ row.disease_count or 0 }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">{{ t('officer.no_data') }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="app-card h-100 d-flex flex-column">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h5 class="fw-bold text-dark mb-0">{{ t('officer.recent') }}</h5>
+                <a class="btn btn-outline-success btn-sm fw-semibold"
+                   href="{{ url_for('export_report', date_from=filters.date_from, date_to=filters.date_to, class_id=filters.class_id, section_id=filters.section_id) }}">
+                    {{ t('officer.export') }}
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>{{ t('officer.log_id') }}</th>
+                            <th>{{ t('officer.timestamp') }}</th>
+                            <th>{{ t('officer.predicted_class') }}</th>
+                            <th>{{ t('officer.confidence') }}</th>
+                            <th>{{ t('officer.section_name') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_logs %}
+                        <tr>
+                            <td>#{{ log.diagnosis_id }}</td>
+                            <td>{{ log.created_at }}</td>
+                            <td class="fw-bold {{ 'text-success' if log.display_name == 'Healthy' else 'text-danger' }}">{{ log.class_name | class_label }}</td>
+                            <td>{{ "%.2f"|format(log.confidence * 100) }}%</td>
+                            <td>{{ log.section_name or t('common.not_available') }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">{{ t('officer.no_data') }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const classLabels = {{ class_counts | map(attribute='class_name') | map('class_label') | list | tojson }};
+    const classValues = {{ class_counts | map(attribute='count') | list | tojson }};
+    const trendLabels = {{ weekly_trend | map(attribute='week') | list | tojson }};
+    const trendValues = {{ weekly_trend | map(attribute='count') | list | tojson }};
+
+    const classCtx = document.getElementById('classChart');
+    if (classCtx && window.Chart) {
+        new Chart(classCtx, {
+            type: 'bar',
+            data: {
+                labels: classLabels,
+                datasets: [{
+                    label: '{{ t("officer.count") }}',
+                    data: classValues,
+                    backgroundColor: ['#ef5350', '#66bb6a', '#ffa726', '#42a5f5'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx && window.Chart) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: '{{ t("officer.count") }}',
+                    data: trendValues,
+                    borderColor: '#2e7d32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.15)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+</script>
+{% endblock %}

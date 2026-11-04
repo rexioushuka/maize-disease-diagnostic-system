@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} - {{ t('error.title') }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8 text-center">
+        <div class="app-card">
+            <div class="display-4 fw-bold text-success mb-2">{{ code }}</div>
+            <h3 class="fw-bold mb-3">{{ t('error.title') }}</h3>
+            <p class="text-muted">{{ message }}</p>
+            {% if code == 401 %}
+            <a href="{{ url_for('login') }}" class="btn btn-success fw-bold mt-2">{{ t('nav.login') }}</a>
+            {% endif %}
+            <a href="{{ url_for('index') }}" class="btn btn-outline-success fw-bold mt-2">{{ t('error.back') }}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

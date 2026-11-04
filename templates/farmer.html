@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}{{ t('farmer.title') }} - {{ t('app.name') }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">{{ t('farmer.welcome') }}, {{ session.get('full_name') or session.get('username') }}</h3>
+        <p class="text-muted mb-0">{{ t('farmer.subtitle') }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#photoGuideModal">
+        {{ t('nav.photo_guide') }}
+    </button>
+</div>
+
+<div class="app-card">
+    <h5 class="fw-bold text-success mb-3">{{ t('farmer.upload_title') }}</h5>
+    <form method="POST" action="{{ url_for('farmer_dashboard') }}" enctype="multipart/form-data" id="diagnosis-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        <div class="upload-dropzone" id="dropzone">
+            <p class="mb-1 fw-semibold">{{ t('farmer.dropzone') }}</p>
+            <small class="text-muted">{{ t('farmer.file') }}</small>
+        </div>
+
+        <div class="row g-3 align-items-end mb-3">
+            <div class="col-lg-5">
+                <label class="form-label fw-semibold" for="file-input">{{ t('farmer.file') }}</label>
+                <input type="file" id="file-input" name="file" class="form-control"
+                       accept="image/png,image/jpeg" data-max-bytes="512000" required>
+            </div>
+            <div class="col-lg-3">
+                <button type="button" class="btn btn-outline-success w-100 fw-semibold"
+                        id="camera-open" data-bs-toggle="modal" data-bs-target="#cameraModal">
+                    {{ t('farmer.camera') }}
+                </button>
+            </div>
+            <div class="col-lg-4">
+                <label class="form-label fw-semibold" for="section_id">{{ t('farmer.section') }}</label>
+                <select id="section_id" name="section_id" class="form-select" required>
+                    {% for sec in sections %}
+                    <option value="{{ sec.section_id }}" {% if sec.section_id == user_section_id %}selected{% endif %}>{{ sec.section_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <img id="image-preview" class="img-fluid rounded border d-none" alt="Leaf preview">
+        </div>
+
+        <button type="submit" id="diagnosis-submit" class="btn btn-success w-100 fw-bold py-2 mt-3">
+            {{ t('farmer.submit') }}
+        </button>
+        <div id="diagnosis-progress" class="text-center text-success fw-semibold mt-3 d-none">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ t('farmer.processing') }}
+        </div>
+    </form>
+</div>
+
+{% if result %}
+<div class="app-card border-success">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h5 class="fw-bold text-success mb-0">{{ t('farmer.result_title') }}</h5>
+        <span class="badge fs-6 {{ 'bg-success' if result.class_name == 'Healthy' else 'bg-danger' }}">
+            {{ t('farmer.healthy') if result.class_name == 'Healthy' else t('farmer.disease_detected') }}
+        </span>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="metric-card text-start">
+                <div class="small text-muted">{{ t('farmer.class') }}</div>
+                <div class="fs-5 fw-bold">{{ result.class_name | class_label }}</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="metric-card text-start">
+                <div class="small text-muted">{{ t('farmer.confidence') }}</div>
+                <div class="fs-5 fw-bold">{{ "%.2f"|format(result.confidence) }}%</div>
+                <div class="progress mt-2" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: {{ result.confidence }}%;"
+                         aria-valuenow="{{ result.confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="list-unstyled small text-muted mb-3">
+        <li><strong>{{ t('farmer.time') }}:</strong> {{ result.total_ms }} ms</li>
+        <li><strong>{{ t('farmer.timestamp') }}:</strong> {{ result.timestamp }}</li>
+        <li><strong>{{ t('farmer.table_id') }}:</strong> #{{ result.diagnosis_id }}</li>
+    </ul>
+
+    {% if result.low_confidence %}
+    <div class="alert alert-warning">
+        <strong>{{ t('farmer.low_confidence') }}</strong>
+        <div class="small mt-1">{{ t('farmer.only_four') }}</div>
+    </div>
+    {% else %}
+    <div class="alert alert-info small">{{ t('farmer.only_four') }}</div>
+    {% endif %}
+
+    {% if result.advisory %}
+    <div class="advisory-box">
+        <h6 class="fw-bold text-dark mb-2">{{ t('farmer.advisory') }}</h6>
+        <p class="mb-1"><strong>{{ t('farmer.status') }}:</strong> {{ result.advisory.status_text }}</p>
+        <p class="mb-1"><strong>{{ t('farmer.description') }}:</strong> {{ result.advisory.description }}</p>
+        <p class="mb-0"><strong>{{ t('farmer.action') }}:</strong> {{ result.advisory.action_text }}</p>
+        <small class="text-muted d-block mt-2">{{ t('farmer.source') }}: {{ result.advisory.source_ref }}</small>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <h6 class="fw-bold">{{ t('farmer.probabilities') }}</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ t('farmer.prob_class') }}</th>
+                        <th>{{ t('farmer.prob_value') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prob in result.probabilities %}
+                    <tr class="{{ 'table-success fw-bold' if prob.class_name == result.class_name else '' }}">
+                        <td>{{ prob.class_name | class_label }}</td>
+                        <td>{{ "%.2f"|format(prob.probability) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-outline-success w-100 fw-bold">{{ t('farmer.new_diagnosis') }}</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="app-card">
+    <h5 class="fw-bold text-dark mb-3">{{ t('farmer.history') }}</h5>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{{ t('farmer.table_id') }}</th>
+                    <th>{{ t('farmer.table_datetime') }}</th>
+                    <th>{{ t('farmer.table_class') }}</th>
+                    <th>{{ t('farmer.table_confidence') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in history %}
+                <tr>
+                    <td>#{{ h.diagnosis_id }}</td>
+                    <td>{{ h.created_at }}</td>
+                    <td><span class="badge {{ 'bg-success' if h.display_name == 'Healthy' else 'bg-danger' }}">{{ h.class_name | class_label }}</span></td>
+                    <td>{{ "%.2f"|format(h.confidence * 100) }}%</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center text-muted py-3">{{ t('farmer.history_empty') }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Photo guide (FR-23) -->
+<div class="modal fade" id="photoGuideModal" tabindex="-1" aria-labelledby="photoGuideLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="photoGuideLabel">{{ t('photo_guide.title') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ t('common.close') }}"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">{{ t('photo_guide.intro') }}</p>
+                <ol class="mb-3">
+                    <li>{{ t('photo_guide.step1') }}</li>
+                    <li>{{ t('photo_guide.step2') }}</li>
+                    <li>{{ t('photo_guide.step3') }}</li>
+                    <li>{{ t('photo_guide.step4') }}</li>
+                </ol>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="dont-show-guide">
+                    <label class="form-check-label small" for="dont-show-guide">{{ t('photo_guide.dont_show') }}</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="photo-guide-close">{{ t('photo_guide.close') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Camera capture -->
+<div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cameraLabel">{{ t('farmer.camera') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ t('common.close') }}"></button>
+            </div>
+            <div class="modal-body text-center">
+                <video id="camera-video" class="w-100 rounded border bg-dark" autoplay playsinline muted></video>
+                <canvas id="camera-canvas" class="d-none"></canvas>
+                <p id="camera-error" class="text-danger small mt-2 d-none"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ t('common.close') }}</button>
+                <button type="button" class="btn btn-success fw-bold" id="camera-capture">{{ t('farmer.camera') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
