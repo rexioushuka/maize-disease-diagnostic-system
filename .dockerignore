@@ -16,7 +16,13 @@ static/uploads/
 *.png
 *.docx
 *.drawio
+tests/
+deploy/
 test_api.py
 evaluate.py
 prep_dataset.py
 train.py
+manage.py
+generate_audit_pdf.py
+requirements-dev.txt
+models/*.h5

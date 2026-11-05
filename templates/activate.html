@@ -7,7 +7,7 @@
             <h3 class="fw-bold text-success mb-1">{{ t('activate.title') }}</h3>
             <p class="text-muted small mb-4">{{ t('activate.subtitle') }}</p>
 
-            <form method="POST" action="{{ url_for('activate_officer') }}">
+            <form method="POST" action="{{ url_for('auth.activate_officer') }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="code">{{ t('activate.code') }}</label>
@@ -31,13 +31,13 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="password">{{ t('activate.password') }}</label>
                     <input type="password" id="password" name="password" class="form-control"
-                           autocomplete="new-password" minlength="8" required>
+                           autocomplete="new-password" minlength="12" required>
                 </div>
                 <button type="submit" class="btn btn-success w-100 fw-bold py-2">{{ t('activate.submit') }}</button>
             </form>
 
             <div class="text-center mt-3">
-                <a href="{{ url_for('login') }}" class="text-decoration-none small text-success fw-bold">{{ t('auth.back_login') }}</a>
+                <a href="{{ url_for('auth.login') }}" class="text-decoration-none small text-success fw-bold">{{ t('auth.back_login') }}</a>
             </div>
         </div>
     </div>

@@ -35,21 +35,28 @@
 
 <div class="app-card">
     <h5 class="fw-bold text-success mb-3">{{ t('admin.invite_title') }}</h5>
-    <form method="POST" action="{{ url_for('invite_officer') }}" class="row g-3">
+    <form method="POST" action="{{ url_for('admin.invite_officer') }}" class="row g-3">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <div class="col-lg-4">
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="invitee_role">{{ t('admin.invite_role') }}</label>
+            <select id="invitee_role" name="invitee_role" class="form-select" required>
+                <option value="EXTENSION_OFFICER" selected>{{ t('status.role_officer') }}</option>
+                <option value="ADMIN">{{ t('status.role_admin') }}</option>
+            </select>
+        </div>
+        <div class="col-lg-3">
             <label class="form-label fw-semibold" for="invitee_name">{{ t('admin.invite_name') }}</label>
             <input type="text" id="invitee_name" name="invitee_name" class="form-control" required>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <label class="form-label fw-semibold" for="invitee_contact">{{ t('admin.invite_contact') }}</label>
             <input type="text" id="invitee_contact" name="invitee_contact" class="form-control" required>
         </div>
-        <div class="col-lg-3">
+        <div class="col-lg-2">
             <label class="form-label fw-semibold" for="employee_ref">{{ t('admin.invite_ref') }}</label>
             <input type="text" id="employee_ref" name="employee_ref" class="form-control" required>
         </div>
-        <div class="col-lg-1 d-grid align-self-end">
+        <div class="col-lg-2 d-grid align-self-end">
             <button type="submit" class="btn btn-success fw-semibold">{{ t('admin.invite_submit') }}</button>
         </div>
     </form>
@@ -63,6 +70,7 @@
                     <th>{{ t('admin.invite_name') }}</th>
                     <th>{{ t('admin.invite_contact') }}</th>
                     <th>{{ t('admin.invite_ref') }}</th>
+                    <th>{{ t('admin.role') }}</th>
                     <th>{{ t('admin.invite_status') }}</th>
                     <th>{{ t('admin.expires') }}</th>
                     <th>{{ t('admin.actions') }}</th>
@@ -75,6 +83,7 @@
                     <td>{{ inv.invitee_name }}</td>
                     <td>{{ inv.invitee_contact }}</td>
                     <td>{{ inv.employee_ref }}</td>
+                    <td><strong>{{ inv.role_name | role_label }}</strong></td>
                     <td>
                         {% set status = inv.display_status or inv.status %}
                         <span class="badge {{ 'bg-warning text-dark' if status == 'PENDING' else ('bg-secondary' if status in ['EXPIRED', 'REVOKED'] else 'bg-success') }}">{{ status | status_label }}</span>
@@ -82,7 +91,7 @@
                     <td>{{ inv.expires_at }}</td>
                     <td>
                         {% if inv.status == 'PENDING' %}
-                        <form method="POST" action="{{ url_for('revoke_invitation', invitation_id=inv.invitation_id) }}" class="d-inline">
+                        <form method="POST" action="{{ url_for('admin.revoke_invitation', invitation_id=inv.invitation_id) }}" class="d-inline">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-outline-danger btn-sm">{{ t('admin.revoke') }}</button>
                         </form>
@@ -90,7 +99,7 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="7" class="text-center text-muted py-3">{{ t('admin.no_invites') }}</td></tr>
+                <tr><td colspan="8" class="text-center text-muted py-3">{{ t('admin.no_invites') }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -98,8 +107,58 @@
 </div>
 
 <div class="app-card">
+    <h5 class="fw-bold text-dark mb-1">{{ t('admin.sections_title') }}</h5>
+    <p class="text-muted small mb-3">{{ t('admin.sections_hint') }}</p>
+    {% if officers %}
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{{ t('register.full_name') }}</th>
+                    <th>{{ t('admin.username') }}</th>
+                    <th>{{ t('officer.section') }}</th>
+                    <th>{{ t('admin.actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for officer in officers %}
+                {% set assigned = officer_sections.get(officer.user_id, []) %}
+                <tr>
+                    <td>{{ officer.full_name }}</td>
+                    <td>{{ officer.username }}</td>
+                    <td>
+                        <form method="POST" id="sections-{{ officer.user_id }}"
+                              action="{{ url_for('admin.set_officer_sections', user_id=officer.user_id) }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for sec in all_sections %}
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="{{ sec.section_id }}"
+                                           {% if sec.section_id in assigned %}checked{% endif %}>
+                                    <span class="form-check-label small">{{ sec.section_name }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </form>
+                    </td>
+                    <td class="text-nowrap">
+                        <button type="submit" form="sections-{{ officer.user_id }}"
+                                class="btn btn-outline-success btn-sm fw-semibold">{{ t('admin.sections_save') }}</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">{{ t('admin.no_officers') }}</p>
+    {% endif %}
+</div>
+
+<div class="app-card">
     <h5 class="fw-bold text-dark mb-3">{{ t('admin.users') }}</h5>
-    <form method="GET" action="{{ url_for('admin_dashboard') }}" class="row g-3 align-items-end mb-3">
+    <form method="GET" action="{{ url_for('admin.dashboard') }}" class="row g-3 align-items-end mb-3">
         <div class="col-lg-4">
             <label class="form-label fw-semibold" for="q">{{ t('admin.search') }}</label>
             <input type="text" id="q" name="q" class="form-control" value="{{ q }}">
@@ -126,7 +185,7 @@
             <button type="submit" class="btn btn-success fw-semibold">{{ t('admin.search_submit') }}</button>
         </div>
         <div class="col-lg-2 d-grid">
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary fw-semibold">{{ t('admin.clear') }}</a>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary fw-semibold">{{ t('admin.clear') }}</a>
         </div>
     </form>
 
@@ -155,7 +214,7 @@
                         <span class="badge {{ 'bg-success' if u.account_status == 'ACTIVE' else ('bg-warning text-dark' if u.account_status == 'LOCKED' else 'bg-secondary') }}">{{ u.account_status | status_label }}</span>
                     </td>
                     <td class="text-nowrap">
-                        <form method="POST" action="{{ url_for('set_user_status', user_id=u.user_id) }}" class="d-inline">
+                        <form method="POST" action="{{ url_for('admin.set_user_status', user_id=u.user_id) }}" class="d-inline">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             {% if u.account_status == 'ACTIVE' %}
                             <input type="hidden" name="action" value="deactivate">
@@ -165,7 +224,7 @@
                             <button type="submit" class="btn btn-outline-success btn-sm">{{ t('admin.activate') }}</button>
                             {% endif %}
                         </form>
-                        <form method="POST" action="{{ url_for('reset_user_password', user_id=u.user_id) }}" class="d-inline"
+                        <form method="POST" action="{{ url_for('admin.reset_user_password', user_id=u.user_id) }}" class="d-inline"
                               onsubmit="return confirm('{{ t('admin.reset_password') }}?');">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-outline-secondary btn-sm">{{ t('admin.reset_password') }}</button>
@@ -181,8 +240,17 @@
 </div>
 
 <div class="app-card">
-    <h5 class="fw-bold text-dark mb-3">{{ t('admin.logs') }}</h5>
-    <form method="GET" action="{{ url_for('admin_dashboard') }}" class="row g-3 align-items-end mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h5 class="fw-bold text-dark mb-0">{{ t('admin.logs') }}</h5>
+        <form method="POST" action="{{ url_for('admin.verify_audit') }}" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <span class="badge {{ 'bg-success' if chain_ok else 'bg-danger' }}">
+                {{ t('admin.audit_intact') if chain_ok else t('admin.audit_broken', id=chain_bad) }}
+            </span>
+            <button type="submit" class="btn btn-outline-secondary btn-sm">{{ t('admin.verify_audit') }}</button>
+        </form>
+    </div>
+    <form method="GET" action="{{ url_for('admin.dashboard') }}" class="row g-3 align-items-end mb-3">
         <input type="hidden" name="q" value="{{ q }}">
         <input type="hidden" name="role" value="{{ role_filter }}">
         <input type="hidden" name="status" value="{{ status_filter }}">

@@ -1,0 +1,14 @@
+{
+  "model_version": "MobileNetV2-v1.1",
+  "file": "mobilenetv2_maize.keras",
+  "sha256": "8b362f6428019bccc314b263f1890a5f5ae7fa0f0cf79ce4e201a73845be17d1",
+  "input_size": [224, 224],
+  "class_names": ["Downy_Mildew", "Healthy", "MLN", "MSV"],
+  "class_indices": {
+    "Downy_Mildew": 0,
+    "Healthy": 1,
+    "MLN": 2,
+    "MSV": 3
+  },
+  "notes": "class_names order is authoritative and is asserted against the model output dimension on load. Do not reorder without retraining."
+}

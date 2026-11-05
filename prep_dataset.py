@@ -1,26 +1,45 @@
+"""Dataset preparation with NO train/test leakage (SEC-22).
+
+Order of operations is critical:
+1. Validate and collect ORIGINAL images per class.
+2. Split originals into train/val/test FIRST (stratified, deterministic seed).
+3. Augment ONLY the training split to reach the target size.
+
+This guarantees the test set contains only unseen original images, so the
+reported accuracy reflects generalisation instead of memorised augmentations.
+"""
+
+import hashlib
+import json
 import os
-import shutil
 import random
-from PIL import Image, ImageOps, ImageEnhance
+import shutil
+
+from PIL import Image, ImageEnhance, ImageOps
 from tqdm import tqdm
 
-# --- CONFIGURATION ---
 RAW_DIR = "data/raw"
 PROCESSED_DIR = "data/processed"
+MAPPING_OUT = "models/class_mapping.json"
+SEED = 42
 
-TARGET_SAMPLES_PER_CLASS = 2500  
+# Target size for the TRAIN split after augmentation.
+TRAIN_TARGET = 1750
+# Balanced caps for held-out splits (originals only, never augmented).
+VAL_PER_CLASS = 375
+TEST_PER_CLASS = 375
 
 CLASSES = {
     "healthy": "Healthy",
     "msv": "MSV",
     "mln": "MLN",
-    "downy_mildew": "Downy_Mildew"
+    "downy_mildew": "Downy_Mildew",
 }
+# Authoritative order == model output index. Never derive it from folder names.
+CLASS_ORDER = ["Downy_Mildew", "Healthy", "MLN", "MSV"]
+
 
 def is_valid_image(filepath):
-    """
-    Verifies if an image file is uncorrupted and readable.
-    """
     try:
         with Image.open(filepath) as img:
             img.verify()
@@ -28,147 +47,150 @@ def is_valid_image(filepath):
     except Exception:
         return False
 
+
+def file_sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def augment_image(pil_img):
-    """
-    Applies random transformations for data augmentation:
-    - Flips, Rotations, Brightness, and Contrast adjustments
-    """
     if random.random() > 0.5:
         pil_img = ImageOps.mirror(pil_img)
     if random.random() > 0.5:
         pil_img = ImageOps.flip(pil_img)
-
     angle = random.randint(-40, 40)
     pil_img = pil_img.rotate(angle, expand=False, fillcolor=(0, 0, 0))
-
-    brightness_factor = random.uniform(0.75, 1.25)
-    pil_img = ImageEnhance.Brightness(pil_img).enhance(brightness_factor)
-
-    contrast_factor = random.uniform(0.8, 1.2)
-    pil_img = ImageEnhance.Contrast(pil_img).enhance(contrast_factor)
-
+    pil_img = ImageEnhance.Brightness(pil_img).enhance(random.uniform(0.75, 1.25))
+    pil_img = ImageEnhance.Contrast(pil_img).enhance(random.uniform(0.8, 1.2))
     return pil_img
 
-def auto_augment_class(source_path, valid_files, target_count, class_label):
-    """
-    Generates synthetic augmented images for small datasets (e.g. Downy Mildew)
-    until target_count is achieved.
-    """
-    current_count = len(valid_files)
-    needed_count = target_count - current_count
-    
-    print(f"[+] Class '{class_label}' has only {current_count} images. Generating {needed_count} augmented images...")
 
-    aug_save_dir = os.path.join(source_path, "auto_augmented")
-    os.makedirs(aug_save_dir, exist_ok=True)
+def create_split_directories():
+    for split in ("train", "val", "test"):
+        for label in CLASS_ORDER:
+            os.makedirs(os.path.join(PROCESSED_DIR, split, label), exist_ok=True)
 
-    augmented_files = []
-    pbar = tqdm(total=needed_count, desc=f"Augmenting {class_label}")
 
-    count = 0
-    while count < needed_count:
-        base_filename = random.choice(valid_files)
-        base_filepath = os.path.join(source_path, base_filename)
+def collect_originals(source_path, limit):
+    files = [
+        f for f in os.listdir(source_path)
+        if f.lower().endswith((".png", ".jpg", ".jpeg"))
+        and os.path.basename(source_path) != "auto_augmented"
+    ]
+    random.Random(SEED).shuffle(files)
+    valid = []
+    for name in files:
+        if is_valid_image(os.path.join(source_path, name)):
+            valid.append(name)
+            if limit and len(valid) >= limit:
+                break
+    return valid
 
+
+def copy_files(source_path, files, split, label):
+    for name in files:
+        src = os.path.join(source_path, name)
+        dst = os.path.join(PROCESSED_DIR, split, label, name)
+        shutil.copy(src, dst)
+
+
+def augment_train(source_path, train_files, target, label):
+    needed = max(0, target - len(train_files))
+    if needed == 0:
+        return
+    print(f"[+] Augmenting '{label}' train split with {needed} images")
+    pbar = tqdm(total=needed, desc=f"Augment {label}")
+    done = 0
+    attempts = 0
+    while done < needed and attempts < needed * 20:
+        attempts += 1
+        name = random.choice(train_files)
         try:
-            with Image.open(base_filepath) as img:
-                img = img.convert("RGB")
-                aug_img = augment_image(img)
-                
-                aug_filename = f"aug_{count+1}_{os.path.basename(base_filename)}"
-                aug_filepath = os.path.join(aug_save_dir, aug_filename)
-                aug_img.save(aug_filepath, "JPEG")
-                
-                augmented_files.append(os.path.join("auto_augmented", aug_filename))
-                count += 1
+            with Image.open(os.path.join(source_path, name)) as img:
+                aug = augment_image(img.convert("RGB"))
+                out = f"aug_{done+1}_{name}"
+                aug.save(os.path.join(PROCESSED_DIR, "train", label, out), "JPEG")
+                done += 1
                 pbar.update(1)
         except Exception:
             continue
-
     pbar.close()
-    return valid_files + augmented_files
 
-def get_fast_valid_samples(source_path, raw_files, target_count):
-    """
-    LAZY VALIDATION:
-    Shuffles files first and stops validating as soon as target_count is reached.
-    Prevent scanning 90,000+ unnecessary files.
-    """
-    shuffled_files = raw_files.copy()
-    random.shuffle(shuffled_files)
-    
-    valid_files = []
-    for file in shuffled_files:
-        file_path = os.path.join(source_path, file)
-        if is_valid_image(file_path):
-            valid_files.append(file)
-            if len(valid_files) >= target_count:
-                break  # Stop early!
-    return valid_files
 
-def create_split_directories():
-    for split in ['train', 'val', 'test']:
-        for _, class_label in CLASSES.items():
-            os.makedirs(os.path.join(PROCESSED_DIR, split, class_label), exist_ok=True)
+def write_class_mapping():
+    mapping = {
+        "model_version": "MobileNetV2-v1.1",
+        "file": "mobilenetv2_maize.keras",
+        "sha256": "",
+        "input_size": [224, 224],
+        "class_names": CLASS_ORDER,
+        "class_indices": {name: i for i, name in enumerate(CLASS_ORDER)},
+        "notes": ("class_names order is authoritative; re-run manage.py "
+                  "rehash-model after saving a new model."),
+    }
+    os.makedirs(os.path.dirname(MAPPING_OUT), exist_ok=True)
+    with open(MAPPING_OUT, "w", encoding="utf-8") as fh:
+        json.dump(mapping, fh, indent=2)
+        fh.write("\n")
+    print(f"[✓] Wrote class mapping to {MAPPING_OUT}")
+
 
 def process_and_split_data():
+    random.seed(SEED)
     create_split_directories()
     print("\n==========================================")
     print("      PHASE 1: DATASET PREPARATION       ")
     print("==========================================\n")
+    summary = {}
 
-    for raw_folder, class_label in CLASSES.items():
+    for raw_folder, label in CLASSES.items():
         source_path = os.path.join(RAW_DIR, raw_folder)
-        
         if not os.path.exists(source_path):
             print(f"[!] Folder '{source_path}' not found! Skipping...")
             continue
 
-        raw_files = [
-            f for f in os.listdir(source_path) 
-            if f.lower().endswith(('.png', '.jpg', '.jpeg'))
-        ]
-        
-        print(f"Scanning '{class_label}'... Found {len(raw_files)} base images.")
+        originals = collect_originals(source_path, None)
+        random.Random(SEED).shuffle(originals)
+        n = len(originals)
+        if n == 0:
+            print(f"[!] No valid images for '{label}'. Skipping.")
+            continue
 
-        # Fast lazy collect up to 2,500 images
-        valid_files = get_fast_valid_samples(source_path, raw_files, TARGET_SAMPLES_PER_CLASS)
+        # Split ORIGINALS first (SEC-22). Reserve up to VAL/TEST caps, keep the
+        # rest for training, then cap train at TRAIN_TARGET.
+        test_n = min(TEST_PER_CLASS, max(1, n // 5))
+        val_n = min(VAL_PER_CLASS, max(1, n // 5))
+        train_n = max(1, n - test_n - val_n)
 
-        # Handle Downy Mildew or under-represented classes with auto-augmentation
-        if len(valid_files) < TARGET_SAMPLES_PER_CLASS:
-            selected_files = auto_augment_class(
-                source_path, valid_files, TARGET_SAMPLES_PER_CLASS, class_label
-            )
-        else:
-            selected_files = valid_files[:TARGET_SAMPLES_PER_CLASS]
+        test_files = originals[:test_n]
+        val_files = originals[test_n:test_n + val_n]
+        train_orig = originals[test_n + val_n:]
+        train_files = train_orig[:TRAIN_TARGET]
 
-        random.shuffle(selected_files)
+        copy_files(source_path, train_files, "train", label)
+        copy_files(source_path, val_files, "val", label)
+        copy_files(source_path, test_files, "test", label)
+        augment_train(source_path, train_files, TRAIN_TARGET, label)
 
-        # 70% Train (1,750), 15% Val (375), 15% Test (375)
-        train_end = int(0.70 * TARGET_SAMPLES_PER_CLASS)
-        val_end = int(0.85 * TARGET_SAMPLES_PER_CLASS)
-
-        train_files = selected_files[:train_end]
-        val_files = selected_files[train_end:val_end]
-        test_files = selected_files[val_end:]
-
-        splits = {
-            'train': train_files,
-            'val': val_files,
-            'test': test_files
+        summary[label] = {
+            "originals": n,
+            "train_originals": len(train_files),
+            "val": len(val_files),
+            "test": len(test_files),
         }
+        print(f"[✓] '{label}': originals={n} train_orig={len(train_files)} "
+              f"val={len(val_files)} test={len(test_files)}\n")
 
-        for split_name, files in splits.items():
-            for fname in files:
-                src = os.path.join(source_path, fname)
-                dst = os.path.join(PROCESSED_DIR, split_name, class_label, os.path.basename(fname))
-                shutil.copy(src, dst)
-
-        print(f"[✓] Completed '{class_label}': Train={len(train_files)}, Val={len(val_files)}, Test={len(test_files)}\n")
-
+    with open("data/split_summary.json", "w", encoding="utf-8") as fh:
+        json.dump(summary, fh, indent=2)
+    write_class_mapping()
     print("==========================================")
-    print(" PHASE 1 COMPLETED SUCCESSFULLY! ")
+    print(" PHASE 1 COMPLETED (leak-aware splits) ")
     print("==========================================\n")
+
 
 if __name__ == "__main__":
     process_and_split_data()

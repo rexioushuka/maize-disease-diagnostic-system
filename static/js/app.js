@@ -325,8 +325,8 @@
 
         const timeoutMs = minutes * 60 * 1000;
         const checkIntervalMs = 5000;
-        const storageKey = "maize.lastActivity";
-        const logoutUrl = body.dataset.logoutUrl || "/logout";
+        const storageKey = "maize.lastActivity:" + (document.body.dataset.userKey || "anon");
+        const logoutUrl = body.dataset.logoutUrl || "/logout/idle";
         let lastActivity = Date.now();
         let lastStorageWrite = 0;
         let redirecting = false;
@@ -363,8 +363,18 @@
         function expireSession() {
             if (redirecting) return;
             redirecting = true;
-            const separator = logoutUrl.indexOf("?") === -1 ? "?" : "&";
-            window.location.replace(logoutUrl + separator + "reason=idle");
+            // POST with CSRF so logout cannot be triggered cross-site (SEC-07).
+            const csrf = document.body.dataset.csrfToken || "";
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = logoutUrl;
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "_csrf_token";
+            input.value = csrf;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
         }
 
         function checkIdle() {

@@ -1,10 +1,11 @@
-"""Smoke-test the authenticated /predict JSON endpoint.
+"""Smoke-test the authenticated JSON endpoint against a running server.
 
-Start the application first, then run:
+Credentials are read from the environment only; there are no hard-coded
+defaults (SEC-01).
+
+    set MAIZE_USERNAME=...
+    set MAIZE_PASSWORD=...
     python test_api.py
-
-Credentials default to the seeded Administrator and can be overridden with
-the MAIZE_USERNAME and MAIZE_PASSWORD environment variables.
 """
 
 import json
@@ -14,8 +15,8 @@ import re
 import requests
 
 BASE_URL = os.environ.get("MAIZE_BASE_URL", "http://127.0.0.1:5000")
-USERNAME = os.environ.get("MAIZE_USERNAME", "rexious_admin")
-PASSWORD = os.environ.get("MAIZE_PASSWORD", "AdminPass123!")
+USERNAME = os.environ.get("MAIZE_USERNAME")
+PASSWORD = os.environ.get("MAIZE_PASSWORD")
 TEST_DIR = os.environ.get("MAIZE_TEST_DIR", os.path.join("data", "processed", "test", "MSV"))
 SECTION_ID = os.environ.get("MAIZE_SECTION_ID", "1")
 
@@ -28,51 +29,46 @@ def extract_csrf(html):
 
 
 def main():
+    if not USERNAME or not PASSWORD:
+        print("[!] Set MAIZE_USERNAME and MAIZE_PASSWORD environment variables.")
+        return 1
     if not os.path.isdir(TEST_DIR):
         print(f"[!] Test image directory not found: {TEST_DIR}")
         return 1
-
-    images = [
-        name for name in os.listdir(TEST_DIR)
-        if name.lower().endswith((".png", ".jpg", ".jpeg"))
-    ]
+    images = [n for n in os.listdir(TEST_DIR)
+              if n.lower().endswith((".png", ".jpg", ".jpeg"))]
     if not images:
         print(f"[!] No image files found in '{TEST_DIR}'")
         return 1
-
-    sample_image_path = os.path.join(TEST_DIR, images[0])
-    print(f"[+] Testing API using: {sample_image_path}")
+    sample = os.path.join(TEST_DIR, images[0])
 
     session = requests.Session()
-    login_page = session.get(f"{BASE_URL}/login", timeout=15)
-    token = extract_csrf(login_page.text)
+    token = extract_csrf(session.get(f"{BASE_URL}/login", timeout=15).text)
     if not token:
         print("[!] Could not obtain a CSRF token from the login page.")
         return 1
 
-    login_response = session.post(
+    resp = session.post(
         f"{BASE_URL}/login",
         data={"login_input": USERNAME, "password": PASSWORD, "_csrf_token": token},
         timeout=15,
     )
-    if "/login" in login_response.url:
-        print("[!] Sign-in failed. Check MAIZE_USERNAME and MAIZE_PASSWORD.")
+    if "/login" in resp.url:
+        print("[!] Sign-in failed. Check MAIZE_USERNAME / MAIZE_PASSWORD.")
         return 1
 
-    dashboard = session.get(f"{BASE_URL}/farmer/dashboard", timeout=15)
-    token = extract_csrf(dashboard.text)
+    token = extract_csrf(session.get(f"{BASE_URL}/farmer/dashboard", timeout=15).text)
     if not token:
         print("[!] Could not obtain a CSRF token from the dashboard.")
         return 1
 
-    with open(sample_image_path, "rb") as image_file:
+    with open(sample, "rb") as image_file:
         response = session.post(
-            f"{BASE_URL}/predict",
-            files={"image": (os.path.basename(sample_image_path), image_file, "image/jpeg")},
+            f"{BASE_URL}/api/v1/predict",
+            files={"image": (os.path.basename(sample), image_file, "image/jpeg")},
             data={"section_id": SECTION_ID, "_csrf_token": token},
             timeout=120,
         )
-
     print("\n--- API RESPONSE ---")
     try:
         print(json.dumps(response.json(), indent=4))

@@ -1,0 +1,9 @@
+# Development / training dependencies (QUA-04)
+-r requirements.txt
+pytest==9.2.0
+requests==2.34.2
+matplotlib==3.10.8
+seaborn==0.13.2
+scikit-learn==1.7.2
+tqdm==4.67.1
+reportlab==5.1.0

@@ -8,6 +8,162 @@ This file records every change made to the project after the initial
 repository baseline, including application code, security, deployment,
 documentation, data, and verification work.
 
+## 2026-11-05 - Password reset via email/SMS verification code
+
+### Added
+
+- Forgotten-password flow now verifies the requester with a Brevo-delivered
+  6-digit code before any reset happens: `/forgot-password` issues a code to
+  the registered email (fallback: registered SMS phone, and vice versa if the
+  primary channel fails) and redirects to `/forgot-password/verify`; the code
+  is SHA-256 hashed, 10-minute expiry, max 5 attempts, rate-limited, resend
+  supported, anti-enumeration preserved (unknown identifiers get the identical
+  response and page). On success a one-time `password_reset_token` is issued
+  and the user is forwarded to the existing set-new-password page. New table
+  `password_reset_code` with migration. Tests cover known/unknown identifier,
+  correct/wrong/expired codes, and the full reset end-to-end (login with the
+  new password).
+- When Brevo is not configured the legacy administrator-assisted token flow is
+  kept as-is.
+
+## 2026-11-05 - Brevo-verified registration & LAN HTTPS camera access
+
+### Added
+
+- Farmer self-registration now verifies the given email/phone with a
+  Brevo-delivered 6-digit code before the account is created. A pending
+  `registration_verification` row (name, username, section, password hash,
+  code hash, 10-minute expiry, max 5 attempts) is stored server-side and the
+  user is created only after the code is entered on `/register/verify/<id>`.
+  Codes are SHA-256 hashed, rate-limited, single-use per send, and can be
+  resent (max 3 resends / 5 min). When `BREVO_API_KEY` is not configured the
+  app logs a warning and falls back to the old immediate registration (dev and
+  test environments are unaffected); when it is configured, delivery failure
+  aborts registration (fail-closed).
+- `msds/services/brevo.py`: minimal Brevo client (transactional email via REST
+  API `BREVO_API_KEY` or SMTP relay `BREVO_SMTP_*` when no API key is set; SMS
+  via REST only) using stdlib only; `deliver_secret` (invitation codes,
+  temporary passwords) now delivers through Brevo when configured, falling
+  back to the previous logging behaviour otherwise.
+- Registration email delivery verified end-to-end (live test to the account
+  owner). SMS requires the Brevo Transactional SMS addon/credits on the
+  account; without it, phone registrations fail closed with a clear message
+  directing users to email instead. Brevo IP restriction must list the
+  server's public IP (https://app.brevo.com/security/authorised_ips) or every
+  request is rejected with 401/525.
+- `run_https.py` now actually starts the HTTP->HTTPS 308 redirect on the HTTP
+  port (it previously only printed that it would), so browsers on the LAN are
+  bounced to the secure site and `getUserMedia` becomes available.
+- LAN HTTPS verified end-to-end (TLS handshake 200 on /login; HTTP 308 to
+  HTTPS). `python app.py` now warns at startup that plain HTTP blocks the LAN
+  camera and points to `run_https.py`.
+  Browsers require a secure context for camera access; plain HTTP cannot be
+  made to work (Chrome/Edge clients may relax it per-device via
+  `chrome://flags/#unsafely-treat-insecure-origin-as-secure`).
+- The LAN leaf certificate was re-issued to cover the current LAN IP
+  (10.1.24.48); the existing local CA was reused, so installed client CA
+  certificates remain valid.
+- `instance/brevo.env` (gitignored) holds `BREVO_API_KEY` / sender settings;
+  real environment variables take precedence.
+
+### Changed
+
+- `js.camera_unsupported` message now points to the HTTPS URL.
+
+### Notes
+
+- HTTPS port is 5443 by default (`HTTPS_PORT`); 80/5000 redirect to it.
+  Install `instance/certs/maize-ca-cert.crt` in each device's trust store or
+  accept the browser warning to make the live camera available.
+- Production/Docker deployments must set BREVO_API_KEY / BREVO_SENDER_EMAIL /
+  BREVO_SENDER_NAME / BREVO_SMS_SENDER as environment variables (instance/ is
+  not copied into images).
+
+## 2026-11-05 - Officer scoping repair & role-aware invitations
+
+### Fixed
+
+- Extension officer dashboard showed no diagnoses because the `officer_section`
+  mapping was empty and there was no way to assign sections; the admin console
+  now has an "Officer Section Assignments" card that lets an administrator tick
+  the village sections each officer may see (saved per officer, audited).
+  Officers with no sections assigned see a clear warning instead of empty
+  charts. The existing officer account was assigned all seven Liwaladzi
+  sections to restore pre-SEC-11 visibility.
+- The admin invitation form now has an explicit "Invite as" choice
+  (Extension Officer / Administrator); the invitation stores the invited role,
+  the one-time code is prefixed accordingly (`MUBAS-OFF-` / `MUBAS-ADM-`), the
+  activation flow creates the account with the invited role, and the
+  invitations table shows the role. Activating an admin invitation works with
+  the existing `no_self_registered_admin` trigger because `created_by` is set.
+- `officer_invitation.role_id` added (default 2) with a migration in
+  `init_db.py`; `maize_schema.sql` updated (fresh installs get the column with
+  an FK clause). Existing invitations default to EXTENSION_OFFICER.
+
+## 2026-11-05 - Security & quality remediation (audit response)
+
+Full remediation of the independent security/code audit. The application was
+restructured into a `msds` package (app factory + blueprints) and every
+High/Medium finding was addressed.
+
+### Security
+
+- Removed the hard-coded administrator password; the first admin is now seeded
+  from `MAIZE_ADMIN_*` env vars or a generated password that must be changed on
+  first login (SEC-01). `test_api.py` no longer ships default credentials.
+- Model is loaded from the safe `.keras` format with `safe_mode=True` and a
+  SHA-256 manifest check (SEC-03); class order is read from
+  `models/class_mapping.json` and asserted against the model output (SEC-21).
+- Rate limiter rewritten: bounded/LRU-pruned, per-account + per-IP keys, ready
+  to swap for Redis (SEC-04).
+- Password reset is token-based, single-use, hashed and time-limited, with a
+  uniform response that does not leak account existence (SEC-06, SEC-13).
+- CSRF token rotates on login/password change; logout is POST-only and the idle
+  timer submits a CSRF-protected POST (SEC-07).
+- Replaced CDN assets with self-hosted Bootstrap/Chart.js and a nonce-based CSP
+  with no `unsafe-inline` (SEC-08).
+- Evidence images stored per-user/per-day with a retention purge job (SEC-09).
+- TLS termination via bundled nginx, non-root container user, `ProxyFix`
+  support and HSTS whenever the proxy reports HTTPS (SEC-10, SEC-18).
+- Officers are scoped to assigned sections, enforced in SQL (SEC-11).
+- Timezone-aware session timeout plus an absolute session lifetime (SEC-12).
+- Centralised password policy (12+ chars, mixed classes, common-password check)
+  and validated/normalised usernames and contacts (SEC-14, SEC-17).
+- Invitation codes and temporary passwords are no longer echoed in the UI;
+  delivery is delegated to configurable mail/SMS gateways (SEC-15).
+- Audit log is now a tamper-evident HMAC hash chain with an admin "verify"
+  action and non-silent failure handling (SEC-16).
+
+### Machine learning
+
+- Dataset split now happens before augmentation, removing train/test leakage
+  (SEC-22); split provenance written to `data/split_summary.json`.
+- Inference has an entropy/margin-based abstain/OOD path; low-confidence and OOD
+  results are not recorded as confirmed disease cases (SEC-20).
+- Evaluation persists a versioned metrics report and asserts class order
+  (SEC-23).
+
+### Architecture & quality
+
+- Split into `msds/` package: app factory, blueprints (main/auth/farmer/officer/
+  admin), services (audit, diagnosis, labels, validation, model registry) and a
+  request-scoped WAL database helper (QUA-01, QUA-11).
+- Added a pytest suite (27 tests) covering auth, CSRF, lockout, upload
+  validation, OOD, officer scoping and audit integrity, plus a GitHub Actions
+  CI workflow (QUA-03).
+- Pinned runtime dependencies, split dev requirements, removed unused
+  `flask-cors`, added `pip-audit` to CI (QUA-04).
+- Individual exception handling, typed client errors, structured audit logging
+  and a real health/readiness signal (QUA-02, QUA-07, QUA-08).
+- Removed stray root artifacts, tightened `.gitignore`/`.dockerignore`
+  (QUA-10); rebuilt Docker image to run as non-root with a single model worker.
+
+### Verification
+
+- `pytest tests -q` -> 27 passed.
+- All pages render (200/302) with the real database; audit chain verifies.
+- `python -m py_compile` on all modules passes.
+
 ## 2026-11-04 - Automatic idle-session redirect (`798fca2`)
 
 ### Added

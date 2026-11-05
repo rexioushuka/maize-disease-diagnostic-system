@@ -6,12 +6,16 @@ env/
 # Python Cache
 __pycache__/
 *.pyc
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Dataset & Raw Files
 data/*
 !data/processed/
 data/processed/*
 !data/processed/test/
+data/raw/
 *.zip
 *.tar.gz
 
@@ -23,6 +27,25 @@ static/uploads/
 *.db-wal
 *.db-shm
 
-# System Files
+# Secrets and certificates
+*.pem
+*.key
+*cert*.crt
+secret_key
+
+# Accidental artifacts (QUA-10)
+1.9.0
+2.*
+3.*
+8.*
+flask)
+-p/
+
+# Generated reports / binaries
+models/*.h5
+*.docx
+Maize_System_Security_Audit.pdf
+
+# OS files
 .DS_Store
 Thumbs.db

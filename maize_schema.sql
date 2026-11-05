@@ -73,6 +73,7 @@ CREATE TABLE officer_invitation (
     invitee_name   TEXT NOT NULL,
     invitee_contact TEXT NOT NULL,         -- e-mail or phone the admin verified out of band
     employee_ref   TEXT NOT NULL,          -- ministry/district staff reference checked by admin
+    role_id        INTEGER NOT NULL DEFAULT 2 REFERENCES role(role_id),  -- invited role: 2=officer, 3=admin
     token_hash     TEXT NOT NULL UNIQUE,   -- hash of the one-time code; code itself never stored
     issued_by      INTEGER NOT NULL REFERENCES app_user(user_id),
     issued_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
@@ -83,6 +84,41 @@ CREATE TABLE officer_invitation (
     used_at        TEXT,
     CHECK (expires_at > issued_at),
     CHECK ((status = 'USED') = (used_by IS NOT NULL))
+);
+
+-- Officers are scoped to the village sections they may report on (SEC-11).
+CREATE TABLE officer_section (
+    user_id    INTEGER NOT NULL REFERENCES app_user(user_id) ON DELETE CASCADE,
+    section_id INTEGER NOT NULL REFERENCES village_section(section_id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, section_id)
+);
+
+-- Pre-registration pending records: the account is created only after the
+-- contact (email or phone) proves ownership of a Brevo-delivered code (FR-02).
+CREATE TABLE registration_verification (
+    verification_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_id      TEXT NOT NULL UNIQUE,       -- random id used in the verify URL
+    contact        TEXT NOT NULL,              -- normalised email or phone
+    contact_kind   TEXT NOT NULL CHECK (contact_kind IN ('email','phone')),
+    full_name      TEXT NOT NULL,
+    username       TEXT NOT NULL,
+    section_id     INTEGER NOT NULL REFERENCES village_section(section_id),
+    password_hash  TEXT NOT NULL,
+    code_hash      TEXT NOT NULL,              -- SHA-256 of the 6-digit code
+    attempts       INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+    expires_at     TEXT NOT NULL,
+    created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE INDEX idx_regver_contact ON registration_verification(contact);
+
+-- Single-use, hashed, expiring password-reset tokens (SEC-06).
+CREATE TABLE password_reset_token (
+    token_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES app_user(user_id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    expires_at TEXT NOT NULL,
+    used_at    TEXT
 );
 
 CREATE TABLE diagnosis (
@@ -114,6 +150,19 @@ FROM diagnosis d
 JOIN disease_class c ON c.class_id = d.class_id
 JOIN diagnosis_probability p ON p.diagnosis_id = d.diagnosis_id AND p.class_id = d.class_id;
 
+-- 6-digit codes for password reset (email/SMS verification before the URL
+-- token is issued). Single-use, hashed, 10-minute expiry, attempt-limited.
+CREATE TABLE password_reset_code (
+    code_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_id  TEXT NOT NULL UNIQUE,           -- random id kept in the session
+    user_id    INTEGER NOT NULL REFERENCES app_user(user_id) ON DELETE CASCADE,
+    code_hash  TEXT NOT NULL,                  -- SHA-256 of the 6-digit code
+    attempts   INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE INDEX idx_resetcode_user ON password_reset_code(user_id);
+
 -- ---------- Audit trail (append-only) ----------
 CREATE TABLE system_log (
     log_id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,7 +174,9 @@ CREATE TABLE system_log (
     request_path   TEXT,
     target_user_id INTEGER REFERENCES app_user(user_id),   -- admin actions on another account
     diagnosis_id   INTEGER REFERENCES diagnosis(diagnosis_id),
-    detail         TEXT                    -- short context; never passwords, tokens or images
+    detail         TEXT,                   -- short context; never passwords, tokens or images
+    prev_hash      TEXT,                   -- SEC-16: hash-chain linkage
+    row_hash       TEXT                    -- HMAC(secret, canonical row + prev_hash)
 );
 
 -- Audit records can never be changed or removed by the application.
@@ -154,6 +205,8 @@ CREATE INDEX idx_log_time          ON system_log(occurred_at DESC);
 CREATE INDEX idx_log_user_time     ON system_log(user_id, occurred_at DESC);
 CREATE INDEX idx_log_event_time    ON system_log(event_type_id, occurred_at DESC);
 CREATE INDEX idx_user_role_status  ON app_user(role_id, account_status);
+CREATE INDEX idx_reset_token_hash  ON password_reset_token(token_hash);
+CREATE INDEX idx_officer_section   ON officer_section(user_id);
 
 -- ---------- Seed data ----------
 INSERT INTO role VALUES (1,'FARMER','Local smallholder farmer'),
@@ -183,4 +236,7 @@ INSERT INTO event_type VALUES
  (15,'UNAUTHORIZED_ATTEMPT','ACCESS_CONTROL','Access refused for role'),
  (16,'SYSTEM_ERROR','SYSTEM','Unhandled application error'),
  (17,'PASSWORD_CHANGE','AUTHENTICATION','User changed own password'),
- (18,'PASSWORD_RESET','ADMINISTRATION','Administrator reset a password');
+ (18,'PASSWORD_RESET','ADMINISTRATION','Administrator reset a password'),
+ (19,'PASSWORD_RESET_REQUESTED','AUTHENTICATION','User requested a password reset token'),
+ (20,'MODEL_OOD','DIAGNOSIS','Image rejected as out-of-distribution / low confidence'),
+ (21,'AUDIT_VERIFY','SYSTEM','Audit hash-chain verification run');

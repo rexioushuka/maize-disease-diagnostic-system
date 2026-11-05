@@ -8,9 +8,9 @@
             <h3 class="fw-bold mb-3">{{ t('error.title') }}</h3>
             <p class="text-muted">{{ message }}</p>
             {% if code == 401 %}
-            <a href="{{ url_for('login') }}" class="btn btn-success fw-bold mt-2">{{ t('nav.login') }}</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-success fw-bold mt-2">{{ t('nav.login') }}</a>
             {% endif %}
-            <a href="{{ url_for('index') }}" class="btn btn-outline-success fw-bold mt-2">{{ t('error.back') }}</a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-success fw-bold mt-2">{{ t('error.back') }}</a>
         </div>
     </div>
 </div>

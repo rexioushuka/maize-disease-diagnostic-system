@@ -7,7 +7,7 @@
             <h3 class="fw-bold text-success mb-1">{{ t('register.title') }}</h3>
             <p class="text-muted small mb-4">{{ t('register.subtitle') }}</p>
 
-            <form method="POST" action="{{ url_for('register') }}">
+            <form method="POST" action="{{ url_for('auth.register') }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -40,12 +40,12 @@
                     <div class="col-md-6">
                         <label class="form-label fw-semibold" for="password">{{ t('register.password') }}</label>
                         <input type="password" id="password" name="password" class="form-control"
-                               autocomplete="new-password" minlength="8" required>
+                               autocomplete="new-password" minlength="12" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold" for="confirm_password">{{ t('register.confirm') }}</label>
                         <input type="password" id="confirm_password" name="confirm_password" class="form-control"
-                               autocomplete="new-password" minlength="8" required>
+                               autocomplete="new-password" minlength="12" required>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-4">{{ t('register.submit') }}</button>
@@ -53,7 +53,7 @@
 
             <div class="text-center mt-3 small text-muted">
                 {{ t('register.have_account') }}
-                <a href="{{ url_for('login') }}" class="text-success fw-bold text-decoration-none">{{ t('register.login_link') }}</a>
+                <a href="{{ url_for('auth.login') }}" class="text-success fw-bold text-decoration-none">{{ t('register.login_link') }}</a>
             </div>
         </div>
     </div>
