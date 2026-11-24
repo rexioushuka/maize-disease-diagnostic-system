@@ -171,3 +171,9 @@ main {
         margin-bottom: 0.35rem;
     }
 }
+
+.password-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

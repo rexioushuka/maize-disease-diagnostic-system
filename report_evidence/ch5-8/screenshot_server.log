@@ -1,0 +1,69 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1795513969.666998    2440 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1795513983.560909    2440 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+I0000 00:00:1795513988.685811    2440 cpu_feature_guard.cc:227] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+ * Serving Flask app 'msds'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5058
+Press CTRL+C to quit
+127.0.0.1 - - [24/Nov/2026 11:53:11] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:11] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:11] "GET /register HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:11] "GET /activate HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:11] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:13] "POST /login HTTP/1.1" 302 -
+127.0.0.1 - - [24/Nov/2026 11:53:13] "GET /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:13] "GET /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:16] "POST /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:16] "GET /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:16] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:17] "GET /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:17] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:17] "GET /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:17] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:18] "POST /login HTTP/1.1" 302 -
+127.0.0.1 - - [24/Nov/2026 11:53:18] "GET /officer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:18] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:19] "POST /login HTTP/1.1" 302 -
+127.0.0.1 - - [24/Nov/2026 11:53:19] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:26] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:26] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:26] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:26] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:30] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:30] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:30] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:30] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:34] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:34] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:34] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:34] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:37] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:37] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:37] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:37] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:40] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:40] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:40] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:40] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:43] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:43] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:43] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:43] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:46] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:46] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:46] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:46] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:47] "GET /static/vendor/chart.umd.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:49] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:49] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:50] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:50] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:53] "GET /static/vendor/bootstrap.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:53] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:53] "GET /static/vendor/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:53:53] "GET /static/js/app.js HTTP/1.1" 200 -

@@ -1,0 +1,49 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1795513781.690363   19360 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1795513813.146152   19360 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+I0000 00:00:1795513841.717150   19360 cpu_feature_guard.cc:227] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+ * Serving Flask app 'msds'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5057
+Press CTRL+C to quit
+127.0.0.1 - - [24/Nov/2026 11:50:50] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:50:50] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:50:54] "POST /login HTTP/1.1" 302 -
+127.0.0.1 - - [24/Nov/2026 11:50:54] "GET /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:50:54] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:50:58] "POST /login HTTP/1.1" 302 -
+127.0.0.1 - - [24/Nov/2026 11:50:58] "GET /farmer/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:11] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:11] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:12] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:12] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:13] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:13] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:14] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:14] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:15] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:16] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:17] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:17] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:18] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:19] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:21] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:21] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:22] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:22] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:22] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:23] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:23] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:24] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:24] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:26] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:27] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:27] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:28] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:28] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:28] "POST /api/v1/predict HTTP/1.1" 200 -
+127.0.0.1 - - [24/Nov/2026 11:51:29] "POST /api/v1/predict HTTP/1.1" 200 -

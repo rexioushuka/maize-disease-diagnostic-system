@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="REDACTED_CSRF_TOKEN">
+    <title>Account Activation - Maize Disease Diagnostic System</title>
+    <link href="http://127.0.0.1:5058/static/vendor/bootstrap.min.css" rel="stylesheet">
+    <link href="http://127.0.0.1:5058/static/css/style.css" rel="stylesheet">
+    
+</head>
+<body data-msg-preparing="Please wait while the image is being prepared."
+      data-msg-camera-unsupported="Live camera requires HTTPS on this network. Open this page over HTTPS (https://&lt;host&gt;:5443) or use the camera app."
+      data-msg-camera-denied="Could not access the camera. Please use the camera app or file picker."
+      data-authenticated="0"
+      data-idle-timeout="30"
+      data-logout-url="/logout/idle"
+      data-csrf-token="REDACTED_CSRF_TOKEN"
+      data-user-key="">
+<nav class="navbar navbar-expand-lg navbar-dark app-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            Maize Diagnostic
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link "
+                           href="/login">Sign In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link "
+                           href="/register">Register</a>
+                    </li>
+                
+            </ul>
+            <ul class="navbar-nav align-items-lg-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Language: English
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        
+                        <li>
+                            <a class="dropdown-item active"
+                               href="/set_language/en?next=/activate">English</a>
+                        </li>
+                        
+                        <li>
+                            <a class="dropdown-item "
+                               href="/set_language/ny?next=/activate">Chichewa</a>
+                        </li>
+                        
+                    </ul>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4">
+    
+        
+    
+
+    
+
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="app-card">
+            <h3 class="fw-bold text-success mb-1">Account Activation</h3>
+            <p class="text-muted small mb-4">Enter the one-time invitation code provided by your system administrator.</p>
+
+            <form method="POST" action="/activate">
+                <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="code">One-Time Invitation Code</label>
+                    <input type="text" id="code" name="code" class="form-control"
+                           placeholder="MUBAS-OFF-... / MUBAS-ADM-..." required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="contact">Registered Email or Phone</label>
+                    <input type="text" id="contact" name="contact" class="form-control" required>
+                    <small class="text-muted">Must match the contact the administrator invited.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="username">Choose Username</label>
+                    <input type="text" id="username" name="username" class="form-control"
+                           autocomplete="username" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="password">Choose Password (min 12 characters)</label>
+                    
+<div class="input-group">
+    <input type="password" id="password" name="password" class="form-control"
+           autocomplete="new-password" minlength="12" required>
+    <button type="button" class="btn btn-outline-secondary password-toggle" data-target="password"
+            data-label-show="Show password" data-label-hide="Hide password"
+            aria-label="Show password" aria-pressed="false" title="Show password">
+        <svg class="password-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <svg class="password-icon-hide d-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>
+    </button>
+</div>
+
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-bold py-2">Activate Account</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="/login" class="text-decoration-none small text-success fw-bold">Back to Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main>
+
+<footer class="app-footer">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span>&copy; 2026 Maize Disease Diagnostic System</span>
+        <span>Liwaladzi, Nkhotakota District</span>
+    </div>
+</footer>
+
+<script src="http://127.0.0.1:5058/static/vendor/bootstrap.bundle.min.js"></script>
+<script src="http://127.0.0.1:5058/static/js/app.js" defer></script>
+
+</body>
+</html>

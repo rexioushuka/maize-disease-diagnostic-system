@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-11-24T09:53:54.724606+00:00",
+  "method": "Authenticated pages rendered by the running Flask application with the real MobileNetV2 model, then captured in headless Chrome",
+  "browser": "Google Chrome 158.0.8127.37",
+  "server_log": "report_evidence/ch5-8/screenshot_server.log",
+  "screenshots": [
+    {
+      "id": "S1_farmer_home",
+      "file": "report_evidence/ch5-8/screenshots/S1_farmer_home.png",
+      "width": 360,
+      "height": 900,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S1_farmer_home.html"
+    },
+    {
+      "id": "S2_diagnosis_result",
+      "file": "report_evidence/ch5-8/screenshots/S2_diagnosis_result.png",
+      "width": 360,
+      "height": 1100,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S2_diagnosis_result.html"
+    },
+    {
+      "id": "S3_sign_in",
+      "file": "report_evidence/ch5-8/screenshots/S3_sign_in.png",
+      "width": 360,
+      "height": 900,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S3_sign_in.html"
+    },
+    {
+      "id": "S3_sign_up",
+      "file": "report_evidence/ch5-8/screenshots/S3_sign_up.png",
+      "width": 360,
+      "height": 900,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S3_sign_up.html"
+    },
+    {
+      "id": "S4_officer_activation",
+      "file": "report_evidence/ch5-8/screenshots/S4_officer_activation.png",
+      "width": 360,
+      "height": 900,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S4_officer_activation.html"
+    },
+    {
+      "id": "S5_farmer_history",
+      "file": "report_evidence/ch5-8/screenshots/S5_farmer_history.png",
+      "width": 360,
+      "height": 1100,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S5_farmer_history.html"
+    },
+    {
+      "id": "S6_officer_dashboard",
+      "file": "report_evidence/ch5-8/screenshots/S6_officer_dashboard.png",
+      "width": 1366,
+      "height": 1000,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S6_officer_dashboard.html"
+    },
+    {
+      "id": "S7_admin_users",
+      "file": "report_evidence/ch5-8/screenshots/S7_admin_users.png",
+      "width": 1400,
+      "height": 1000,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S7_admin_users.html"
+    },
+    {
+      "id": "S8_admin_system_log",
+      "file": "report_evidence/ch5-8/screenshots/S8_admin_system_log.png",
+      "width": 1400,
+      "height": 1200,
+      "html_snapshot": "report_evidence/ch5-8/screenshots/html/S8_admin_system_log.html"
+    }
+  ]
+}

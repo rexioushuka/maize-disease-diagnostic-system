@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="REDACTED_CSRF_TOKEN">
+    <title>Farmer Dashboard - Maize Disease Diagnostic System</title>
+    <link href="http://127.0.0.1:5058/static/vendor/bootstrap.min.css" rel="stylesheet">
+    <link href="http://127.0.0.1:5058/static/css/style.css" rel="stylesheet">
+    
+</head>
+<body data-msg-preparing="Please wait while the image is being prepared."
+      data-msg-camera-unsupported="Live camera requires HTTPS on this network. Open this page over HTTPS (https://&lt;host&gt;:5443) or use the camera app."
+      data-msg-camera-denied="Could not access the camera. Please use the camera app or file picker."
+      data-authenticated="1"
+      data-idle-timeout="30"
+      data-logout-url="/logout/idle"
+      data-csrf-token="REDACTED_CSRF_TOKEN"
+      data-user-key="2">
+<nav class="navbar navbar-expand-lg navbar-dark app-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            Maize Diagnostic
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                
+                    
+                    <li class="nav-item">
+                        <a class="nav-link active"
+                           href="/farmer/dashboard">Diagnose Leaf</a>
+                    </li>
+                    
+                    
+                    
+                
+            </ul>
+            <ul class="navbar-nav align-items-lg-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Language: English
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        
+                        <li>
+                            <a class="dropdown-item active"
+                               href="/set_language/en?next=/farmer/dashboard">English</a>
+                        </li>
+                        
+                        <li>
+                            <a class="dropdown-item "
+                               href="/set_language/ny?next=/farmer/dashboard">Chichewa</a>
+                        </li>
+                        
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <span class="navbar-text small me-lg-2">
+                        Demo Farmer
+                        <span class="badge role-badge">Farmer</span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/change-password">Change Password</a>
+                </li>
+                <li class="nav-item">
+                    <form method="POST" action="/logout" class="d-inline">
+                        <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                        <button type="submit" class="nav-link btn btn-link">Sign Out</button>
+                    </form>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4">
+    
+        
+    
+
+    
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">Welcome, Demo Farmer</h3>
+        <p class="text-muted mb-0">Upload or capture a clear photo of a maize leaf for instant diagnosis.</p>
+    </div>
+    <button type="button" class="btn btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#photoGuideModal">
+        Photo Guide
+    </button>
+</div>
+
+<div class="app-card">
+    <h5 class="fw-bold text-success mb-3">Image Upload &amp; Camera Capture</h5>
+    <form method="POST" action="/farmer/dashboard" enctype="multipart/form-data" id="diagnosis-form">
+        <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+
+        <div class="upload-dropzone" id="dropzone">
+            <p class="mb-1 fw-semibold">Drag &amp; drop a leaf image here, or use the buttons below</p>
+            <small class="text-muted">Leaf image (JPEG or PNG, max 5 MB)</small>
+        </div>
+
+        <div class="row g-3 align-items-end mb-3">
+            <div class="col-lg-5">
+                <label class="form-label fw-semibold" for="file-input">Leaf image (JPEG or PNG, max 5 MB)</label>
+                <input type="file" id="file-input" name="file" class="form-control"
+                       accept="image/png,image/jpeg" data-max-bytes="512000" required>
+            </div>
+            <div class="col-lg-3">
+                <button type="button" class="btn btn-outline-success w-100 fw-semibold"
+                        id="camera-open" data-bs-toggle="modal" data-bs-target="#cameraModal">
+                    Use Camera
+                </button>
+            </div>
+            <div class="col-lg-4">
+                <label class="form-label fw-semibold" for="section_id">Village Section of the Field</label>
+                <select id="section_id" name="section_id" class="form-select" required>
+                    
+                    <option value="2" >Gowoka</option>
+                    
+                    <option value="3" >Kambwiri</option>
+                    
+                    <option value="6" >Kautaka</option>
+                    
+                    <option value="7" >Liwaladzi Central</option>
+                    
+                    <option value="5" >Nsindwa</option>
+                    
+                    <option value="1" selected>Nzumala</option>
+                    
+                    <option value="4" >Zunga</option>
+                    
+                </select>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <img id="image-preview" class="img-fluid rounded border d-none" alt="Leaf preview">
+        </div>
+
+        <button type="submit" id="diagnosis-submit" class="btn btn-success w-100 fw-bold py-2 mt-3">
+            Submit for Diagnosis
+        </button>
+        <div id="diagnosis-progress" class="text-center text-success fw-semibold mt-3 d-none">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Analysing leaf image...
+        </div>
+    </form>
+</div>
+
+
+
+<div class="app-card">
+    <h5 class="fw-bold text-dark mb-3">Your Past Diagnostic History</h5>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date / Time</th>
+                    <th>Disease Class</th>
+                    <th>Confidence</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr><td colspan="4" class="text-center text-muted py-3">No diagnostic records found.</td></tr>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Photo guide (FR-23) -->
+<div class="modal fade" id="photoGuideModal" tabindex="-1" aria-labelledby="photoGuideLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="photoGuideLabel">How to photograph a maize leaf</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">A good photograph gives a much better diagnosis. Follow these four steps.</p>
+                <ol class="mb-3">
+                    <li>Pick one leaf that clearly shows the symptoms.</li>
+                    <li>Photograph it in daylight, avoiding shadows and glare.</li>
+                    <li>Fill the frame with the leaf and keep the camera steady.</li>
+                    <li>Use a plain background where possible and avoid blur.</li>
+                </ol>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="dont-show-guide">
+                    <label class="form-check-label small" for="dont-show-guide">Do not show this again</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="photo-guide-close">Got it, continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Camera capture -->
+<div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cameraLabel">Use Camera</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <video id="camera-video" class="w-100 rounded border bg-dark" autoplay playsinline muted></video>
+                <canvas id="camera-canvas" class="d-none"></canvas>
+                <p id="camera-error" class="text-danger small mt-2 d-none"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success fw-bold" id="camera-capture">Use Camera</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main>
+
+<footer class="app-footer">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span>&copy; 2026 Maize Disease Diagnostic System</span>
+        <span>Liwaladzi, Nkhotakota District</span>
+    </div>
+</footer>
+
+<script src="http://127.0.0.1:5058/static/vendor/bootstrap.bundle.min.js"></script>
+<script src="http://127.0.0.1:5058/static/js/app.js" defer></script>
+
+</body>
+</html>

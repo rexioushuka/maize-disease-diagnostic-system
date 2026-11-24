@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="REDACTED_CSRF_TOKEN">
+    <title>Extension Officer Surveillance Dashboard - Maize Disease Diagnostic System</title>
+    <link href="http://127.0.0.1:5058/static/vendor/bootstrap.min.css" rel="stylesheet">
+    <link href="http://127.0.0.1:5058/static/css/style.css" rel="stylesheet">
+    
+</head>
+<body data-msg-preparing="Please wait while the image is being prepared."
+      data-msg-camera-unsupported="Live camera requires HTTPS on this network. Open this page over HTTPS (https://&lt;host&gt;:5443) or use the camera app."
+      data-msg-camera-denied="Could not access the camera. Please use the camera app or file picker."
+      data-authenticated="1"
+      data-idle-timeout="30"
+      data-logout-url="/logout/idle"
+      data-csrf-token="REDACTED_CSRF_TOKEN"
+      data-user-key="3">
+<nav class="navbar navbar-expand-lg navbar-dark app-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            Maize Diagnostic
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                
+                    
+                    <li class="nav-item">
+                        <a class="nav-link "
+                           href="/farmer/dashboard">Diagnose Leaf</a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a class="nav-link active"
+                           href="/officer/dashboard">Officer Dashboard</a>
+                    </li>
+                    
+                    
+                
+            </ul>
+            <ul class="navbar-nav align-items-lg-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Language: English
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        
+                        <li>
+                            <a class="dropdown-item active"
+                               href="/set_language/en?next=/officer/dashboard">English</a>
+                        </li>
+                        
+                        <li>
+                            <a class="dropdown-item "
+                               href="/set_language/ny?next=/officer/dashboard">Chichewa</a>
+                        </li>
+                        
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <span class="navbar-text small me-lg-2">
+                        Extension Officer
+                        <span class="badge role-badge">Extension Officer</span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/change-password">Change Password</a>
+                </li>
+                <li class="nav-item">
+                    <form method="POST" action="/logout" class="d-inline">
+                        <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                        <button type="submit" class="nav-link btn btn-link">Sign Out</button>
+                    </form>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4">
+    
+        
+    
+
+    
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">Extension Officer Surveillance Dashboard</h3>
+        <p class="text-muted mb-0">Analytical overview and regional monitoring &middot; Liwaladzi, Nkhotakota District</p>
+    </div>
+    <a href="/farmer/dashboard" class="btn btn-outline-success fw-semibold">Diagnose a Leaf</a>
+</div>
+
+
+
+<div class="app-card">
+    <h5 class="fw-bold text-success mb-3">Filters</h5>
+    <form method="GET" action="/officer/dashboard" class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="date_from">From date</label>
+            <input type="date" id="date_from" name="date_from" class="form-control" value="">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="date_to">To date</label>
+            <input type="date" id="date_to" name="date_to" class="form-control" value="">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="class_id">Disease class</label>
+            <select id="class_id" name="class_id" class="form-select">
+                <option value="">All</option>
+                
+                <option value="0" >Downy Mildew</option>
+                
+                <option value="1" >Healthy</option>
+                
+                <option value="2" >Maize Lethal Necrosis (MLN)</option>
+                
+                <option value="3" >Maize Streak Virus (MSV)</option>
+                
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold" for="section_id">Village section</label>
+            <select id="section_id" name="section_id" class="form-select">
+                <option value="">All</option>
+                
+                <option value="1" >Nzumala</option>
+                
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-success fw-semibold">Apply Filters</button>
+        </div>
+        <div class="col-md-2 d-grid">
+            <a href="/officer/dashboard" class="btn btn-outline-secondary fw-semibold">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="metric-card">
+            <div class="small text-success fw-bold">Total Scans</div>
+            <div class="display-6 fw-bold text-dark">3</div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="metric-card warning">
+            <div class="small text-warning-emphasis fw-bold">Disease Cases</div>
+            <div class="display-6 fw-bold text-dark">2</div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12">
+        <div class="metric-card info">
+            <div class="small text-primary fw-bold">Healthy Cases</div>
+            <div class="display-6 fw-bold text-dark">1</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="app-card h-100">
+            <h5 class="fw-bold text-dark mb-3">Cases per Disease Class</h5>
+            <canvas id="classChart" height="220" aria-label="Cases per Disease Class"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="app-card h-100">
+            <h5 class="fw-bold text-dark mb-3">Weekly Diagnosis Trend</h5>
+            <canvas id="trendChart" height="220" aria-label="Weekly Diagnosis Trend"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="app-card h-100">
+            <h5 class="fw-bold text-dark mb-3">Cases per Village Section</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Village Section</th>
+                            <th>Cases</th>
+                            <th>Disease Cases</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>Nzumala</td>
+                            <td>3</td>
+                            <td>2</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="app-card h-100 d-flex flex-column">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h5 class="fw-bold text-dark mb-0">Recent Diagnostic Activity</h5>
+                <a class="btn btn-outline-success btn-sm fw-semibold"
+                   href="/officer/export?date_from=&amp;date_to=&amp;class_id=&amp;section_id=">
+                    Export Anonymised CSV
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Record ID</th>
+                            <th>Timestamp</th>
+                            <th>Predicted Class</th>
+                            <th>Confidence</th>
+                            <th>Village Section</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>#3</td>
+                            <td>2026-11-24T09:53:17.221Z</td>
+                            <td class="fw-bold text-danger">Maize Lethal Necrosis (MLN)</td>
+                            <td>100.00%</td>
+                            <td>Nzumala</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>#2</td>
+                            <td>2026-11-24T09:53:16.918Z</td>
+                            <td class="fw-bold text-danger">Maize Streak Virus (MSV)</td>
+                            <td>99.90%</td>
+                            <td>Nzumala</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>#1</td>
+                            <td>2026-11-24T09:53:16.508Z</td>
+                            <td class="fw-bold text-success">Healthy</td>
+                            <td>94.38%</td>
+                            <td>Nzumala</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main>
+
+<footer class="app-footer">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span>&copy; 2026 Maize Disease Diagnostic System</span>
+        <span>Liwaladzi, Nkhotakota District</span>
+    </div>
+</footer>
+
+<script src="http://127.0.0.1:5058/static/vendor/bootstrap.bundle.min.js"></script>
+<script src="http://127.0.0.1:5058/static/js/app.js" defer></script>
+
+<script src="http://127.0.0.1:5058/static/vendor/chart.umd.min.js" nonce="2F4ynWgoit9toMmdxqdcbA"></script>
+<script nonce="2F4ynWgoit9toMmdxqdcbA">
+    const classLabels = ["Downy Mildew", "Healthy", "Maize Lethal Necrosis (MLN)", "Maize Streak Virus (MSV)"];
+    const classValues = [0, 1, 1, 1];
+    const trendLabels = ["2026-47"];
+    const trendValues = [3];
+
+    const classCtx = document.getElementById('classChart');
+    if (classCtx && window.Chart) {
+        new Chart(classCtx, {
+            type: 'bar',
+            data: {
+                labels: classLabels,
+                datasets: [{
+                    label: 'Cases',
+                    data: classValues,
+                    backgroundColor: ['#ef5350', '#66bb6a', '#ffa726', '#42a5f5'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx && window.Chart) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Cases',
+                    data: trendValues,
+                    borderColor: '#2e7d32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.15)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

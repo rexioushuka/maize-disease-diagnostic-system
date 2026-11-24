@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t('auth.login_title') }} - {{ t('app.name') }}{% endblock %}
 {% block content %}
+{% from '_macros.html' import password_field with context %}
 <div class="row justify-content-center">
     <div class="col-lg-5 col-md-7">
         <div class="app-card">
@@ -16,8 +17,8 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="password">{{ t('auth.password') }}</label>
-                    <input type="password" id="password" name="password" class="form-control"
-                           placeholder="{{ t('auth.password_placeholder') }}" autocomplete="current-password" required>
+                    {{ password_field("password", "password", autocomplete="current-password",
+                        placeholder=t('auth.password_placeholder')) }}
                 </div>
                 <div class="text-end mb-4">
                     <a href="{{ url_for('auth.forgot_password') }}" class="small text-decoration-none">{{ t('auth.forgot') }}</a>

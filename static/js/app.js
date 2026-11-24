@@ -316,6 +316,27 @@
         });
     }
 
+    function setupPasswordToggles() {
+        document.addEventListener("click", function (event) {
+            const button = event.target.closest(".password-toggle");
+            if (!button) return;
+            const target = byId(button.getAttribute("data-target"));
+            if (!target) return;
+            const reveal = target.type !== "text";
+            target.type = reveal ? "text" : "password";
+            button.setAttribute("aria-pressed", reveal ? "true" : "false");
+            const label = reveal ? button.dataset.labelHide : button.dataset.labelShow;
+            if (label) {
+                button.setAttribute("aria-label", label);
+                button.setAttribute("title", label);
+            }
+            const showIcon = button.querySelector(".password-icon-show");
+            const hideIcon = button.querySelector(".password-icon-hide");
+            if (showIcon) showIcon.classList.toggle("d-none", reveal);
+            if (hideIcon) hideIcon.classList.toggle("d-none", !reveal);
+        });
+    }
+
     function setupIdleLogout() {
         const body = document.body;
         if (!body || body.dataset.authenticated !== "1") return;
@@ -417,6 +438,7 @@
         setupUpload();
         setupCamera();
         setupFormProgress();
+        setupPasswordToggles();
         setupIdleLogout();
     });
 })();

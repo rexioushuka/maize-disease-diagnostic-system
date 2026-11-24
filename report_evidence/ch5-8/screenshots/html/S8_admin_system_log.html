@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="REDACTED_CSRF_TOKEN">
+    <title>Administrator Console - Maize Disease Diagnostic System</title>
+    <link href="http://127.0.0.1:5058/static/vendor/bootstrap.min.css" rel="stylesheet">
+    <link href="http://127.0.0.1:5058/static/css/style.css" rel="stylesheet">
+    
+</head>
+<body data-msg-preparing="Please wait while the image is being prepared."
+      data-msg-camera-unsupported="Live camera requires HTTPS on this network. Open this page over HTTPS (https://&lt;host&gt;:5443) or use the camera app."
+      data-msg-camera-denied="Could not access the camera. Please use the camera app or file picker."
+      data-authenticated="1"
+      data-idle-timeout="30"
+      data-logout-url="/logout/idle"
+      data-csrf-token="REDACTED_CSRF_TOKEN"
+      data-user-key="1">
+<nav class="navbar navbar-expand-lg navbar-dark app-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            Maize Diagnostic
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                
+                    
+                    <li class="nav-item">
+                        <a class="nav-link "
+                           href="/farmer/dashboard">Diagnose Leaf</a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a class="nav-link "
+                           href="/officer/dashboard">Officer Dashboard</a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a class="nav-link active"
+                           href="/admin/dashboard">Admin Console</a>
+                    </li>
+                    
+                
+            </ul>
+            <ul class="navbar-nav align-items-lg-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Language: English
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        
+                        <li>
+                            <a class="dropdown-item active"
+                               href="/set_language/en?next=/admin/dashboard">English</a>
+                        </li>
+                        
+                        <li>
+                            <a class="dropdown-item "
+                               href="/set_language/ny?next=/admin/dashboard">Chichewa</a>
+                        </li>
+                        
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <span class="navbar-text small me-lg-2">
+                        Admin User
+                        <span class="badge role-badge">Administrator</span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/change-password">Change Password</a>
+                </li>
+                <li class="nav-item">
+                    <form method="POST" action="/logout" class="d-inline">
+                        <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                        <button type="submit" class="nav-link btn btn-link">Sign Out</button>
+                    </form>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4">
+    
+        
+    
+
+    
+<div class="mb-4">
+    <h3 class="fw-bold text-dark mb-1">Administrator Console</h3>
+    <p class="text-muted mb-0">System administration and audit oversight &middot; Liwaladzi, Nkhotakota District</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card">
+            <div class="small text-success fw-bold">Total Users</div>
+            <div class="display-6 fw-bold text-dark">3</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card info">
+            <div class="small text-primary fw-bold">Active Users</div>
+            <div class="display-6 fw-bold text-dark">3</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card">
+            <div class="small text-success fw-bold">Total Diagnoses</div>
+            <div class="display-6 fw-bold text-dark">3</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="metric-card warning">
+            <div class="small text-warning-emphasis fw-bold">Pending Invitations</div>
+            <div class="display-6 fw-bold text-dark">0</div>
+        </div>
+    </div>
+</div>
+
+<div class="app-card">
+    <h5 class="fw-bold text-success mb-3">Generate Single-Use Invitation</h5>
+    <form method="POST" action="/admin/invite" class="row g-3">
+        <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="invitee_role">Invite as</label>
+            <select id="invitee_role" name="invitee_role" class="form-select" required>
+                <option value="EXTENSION_OFFICER" selected>Extension Officer</option>
+                <option value="ADMIN">Administrator</option>
+            </select>
+        </div>
+        <div class="col-lg-3">
+            <label class="form-label fw-semibold" for="invitee_name">Full Name</label>
+            <input type="text" id="invitee_name" name="invitee_name" class="form-control" required>
+        </div>
+        <div class="col-lg-3">
+            <label class="form-label fw-semibold" for="invitee_contact">Verified Email / Phone</label>
+            <input type="text" id="invitee_contact" name="invitee_contact" class="form-control" required>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="employee_ref">Staff Reference / Ministry ID</label>
+            <input type="text" id="employee_ref" name="employee_ref" class="form-control" required>
+        </div>
+        <div class="col-lg-2 d-grid align-self-end">
+            <button type="submit" class="btn btn-success fw-semibold">Send Invitation</button>
+        </div>
+    </form>
+
+    <h6 class="fw-bold text-dark mt-4 mb-2">Invitations</h6>
+    <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Invited</th>
+                    <th>Full Name</th>
+                    <th>Verified Email / Phone</th>
+                    <th>Staff Reference / Ministry ID</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Expires</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr><td colspan="8" class="text-center text-muted py-3">No invitations have been issued.</td></tr>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="app-card">
+    <h5 class="fw-bold text-dark mb-1">Officer Section Assignments</h5>
+    <p class="text-muted small mb-3">Choose which village sections each extension officer may see. Officers with no sections assigned see no diagnosis data.</p>
+    
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Village section</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                
+                <tr>
+                    <td>Extension Officer</td>
+                    <td>officer</td>
+                    <td>
+                        <form method="POST" id="sections-3"
+                              action="/admin/officers/3/sections">
+                            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                            <div class="d-flex flex-wrap gap-2">
+                                
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="2"
+                                           >
+                                    <span class="form-check-label small">Gowoka</span>
+                                </label>
+                                
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="3"
+                                           >
+                                    <span class="form-check-label small">Kambwiri</span>
+                                </label>
+                                
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="6"
+                                           >
+                                    <span class="form-check-label small">Kautaka</span>
+                                </label>
+                                
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="7"
+                                           >
+                                    <span class="form-check-label small">Liwaladzi Central</span>
+                                </label>
+                                
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="5"
+                                           >
+                                    <span class="form-check-label small">Nsindwa</span>
+                                </label>
+                                
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="1"
+                                           checked>
+                                    <span class="form-check-label small">Nzumala</span>
+                                </label>
+                                
+                                <label class="form-check form-check-inline mb-0 border rounded px-2 py-1">
+                                    <input class="form-check-input" type="checkbox" name="section_ids"
+                                           value="4"
+                                           >
+                                    <span class="form-check-label small">Zunga</span>
+                                </label>
+                                
+                            </div>
+                        </form>
+                    </td>
+                    <td class="text-nowrap">
+                        <button type="submit" form="sections-3"
+                                class="btn btn-outline-success btn-sm fw-semibold">Save Sections</button>
+                    </td>
+                </tr>
+                
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+<div class="app-card">
+    <h5 class="fw-bold text-dark mb-3">User Account Management</h5>
+    <form method="GET" action="/admin/dashboard" class="row g-3 align-items-end mb-3">
+        <div class="col-lg-4">
+            <label class="form-label fw-semibold" for="q">Search name, username, email or phone</label>
+            <input type="text" id="q" name="q" class="form-control" value="">
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="role">Role</label>
+            <select id="role" name="role" class="form-select">
+                <option value="">All</option>
+                <option value="FARMER" >Farmer</option>
+                <option value="EXTENSION_OFFICER" >Extension Officer</option>
+                <option value="ADMIN" >Administrator</option>
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="status">Status</label>
+            <select id="status" name="status" class="form-select">
+                <option value="">All</option>
+                <option value="ACTIVE" >Active</option>
+                <option value="DEACTIVATED" >Deactivated</option>
+                <option value="LOCKED" >Locked</option>
+            </select>
+        </div>
+        <div class="col-lg-2 d-grid">
+            <button type="submit" class="btn btn-success fw-semibold">Search</button>
+        </div>
+        <div class="col-lg-2 d-grid">
+            <a href="/admin/dashboard" class="btn btn-outline-secondary fw-semibold">Clear</a>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Email or Phone Number</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td>#1</td>
+                    <td>Admin User</td>
+                    <td>admin</td>
+                    <td>admin@example.com</td>
+                    <td><strong class="text-success">Administrator</strong></td>
+                    <td>
+                        <span class="badge bg-success">Active</span>
+                    </td>
+                    <td class="text-nowrap">
+                        <form method="POST" action="/admin/users/1/status" class="d-inline">
+                            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                            
+                            <input type="hidden" name="action" value="deactivate">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Deactivate</button>
+                            
+                        </form>
+                        <form method="POST" action="/admin/users/1/reset-password" class="d-inline"
+                              onsubmit="return confirm('Reset Password?');">
+                            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Reset Password</button>
+                        </form>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>#2</td>
+                    <td>Demo Farmer</td>
+                    <td>farmer</td>
+                    <td>f@example.com</td>
+                    <td><strong class="text-success">Farmer</strong></td>
+                    <td>
+                        <span class="badge bg-success">Active</span>
+                    </td>
+                    <td class="text-nowrap">
+                        <form method="POST" action="/admin/users/2/status" class="d-inline">
+                            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                            
+                            <input type="hidden" name="action" value="deactivate">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Deactivate</button>
+                            
+                        </form>
+                        <form method="POST" action="/admin/users/2/reset-password" class="d-inline"
+                              onsubmit="return confirm('Reset Password?');">
+                            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Reset Password</button>
+                        </form>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>#3</td>
+                    <td>Extension Officer</td>
+                    <td>officer</td>
+                    <td>o@example.com</td>
+                    <td><strong class="text-success">Extension Officer</strong></td>
+                    <td>
+                        <span class="badge bg-success">Active</span>
+                    </td>
+                    <td class="text-nowrap">
+                        <form method="POST" action="/admin/users/3/status" class="d-inline">
+                            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                            
+                            <input type="hidden" name="action" value="deactivate">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Deactivate</button>
+                            
+                        </form>
+                        <form method="POST" action="/admin/users/3/reset-password" class="d-inline"
+                              onsubmit="return confirm('Reset Password?');">
+                            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Reset Password</button>
+                        </form>
+                    </td>
+                </tr>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="app-card">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h5 class="fw-bold text-dark mb-0">System Audit Log</h5>
+        <form method="POST" action="/admin/audit/verify" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="_csrf_token" value="REDACTED_CSRF_TOKEN">
+            <span class="badge bg-success">
+                Audit chain intact
+            </span>
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Verify audit chain</button>
+        </form>
+    </div>
+    <form method="GET" action="/admin/dashboard" class="row g-3 align-items-end mb-3">
+        <input type="hidden" name="q" value="">
+        <input type="hidden" name="role" value="">
+        <input type="hidden" name="status" value="">
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="log_from">From date</label>
+            <input type="date" id="log_from" name="log_from" class="form-control" value="">
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="log_to">To date</label>
+            <input type="date" id="log_to" name="log_to" class="form-control" value="">
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="log_user">User</label>
+            <input type="text" id="log_user" name="log_user" class="form-control" value="">
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="log_event">Event</label>
+            <select id="log_event" name="log_event" class="form-select">
+                <option value="">All</option>
+                
+                <option value="ACCOUNT_LOCKED" >ACCOUNT_LOCKED</option>
+                
+                <option value="AUDIT_VERIFY" >AUDIT_VERIFY</option>
+                
+                <option value="DASHBOARD_VIEW" >DASHBOARD_VIEW</option>
+                
+                <option value="INVITATION_ISSUED" >INVITATION_ISSUED</option>
+                
+                <option value="INVITATION_REVOKED" >INVITATION_REVOKED</option>
+                
+                <option value="LOGIN_FAILURE" >LOGIN_FAILURE</option>
+                
+                <option value="LOGIN_SUCCESS" >LOGIN_SUCCESS</option>
+                
+                <option value="LOGOUT" >LOGOUT</option>
+                
+                <option value="LOG_VIEW" >LOG_VIEW</option>
+                
+                <option value="MODEL_INFERENCE" >MODEL_INFERENCE</option>
+                
+                <option value="MODEL_OOD" >MODEL_OOD</option>
+                
+                <option value="PASSWORD_CHANGE" >PASSWORD_CHANGE</option>
+                
+                <option value="PASSWORD_RESET" >PASSWORD_RESET</option>
+                
+                <option value="PASSWORD_RESET_REQUESTED" >PASSWORD_RESET_REQUESTED</option>
+                
+                <option value="REGISTER_FARMER" >REGISTER_FARMER</option>
+                
+                <option value="REGISTER_OFFICER" >REGISTER_OFFICER</option>
+                
+                <option value="REPORT_EXPORT" >REPORT_EXPORT</option>
+                
+                <option value="ROLE_CHANGE" >ROLE_CHANGE</option>
+                
+                <option value="SYSTEM_ERROR" >SYSTEM_ERROR</option>
+                
+                <option value="UNAUTHORIZED_ATTEMPT" >UNAUTHORIZED_ATTEMPT</option>
+                
+                <option value="USER_STATUS_CHANGE" >USER_STATUS_CHANGE</option>
+                
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold" for="log_outcome">Outcome</label>
+            <select id="log_outcome" name="log_outcome" class="form-select">
+                <option value="">All</option>
+                <option value="SUCCESS" >Success</option>
+                <option value="FAILURE" >Failure</option>
+                <option value="DENIED" >Denied</option>
+            </select>
+        </div>
+        <div class="col-lg-2 d-grid">
+            <button type="submit" class="btn btn-success fw-semibold">Apply Filters</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Event</th>
+                    <th>User</th>
+                    <th>Outcome</th>
+                    <th>Source IP</th>
+                    <th>Request Path</th>
+                    <th>Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td>#7</td>
+                    <td>2026-11-24T09:53:19.863Z</td>
+                    <td class="fw-bold text-primary">LOGIN_SUCCESS</td>
+                    <td>admin</td>
+                    <td>
+                        <span class="badge bg-success">Success</span>
+                    </td>
+                    <td>127.0.0.1</td>
+                    <td>/login</td>
+                    <td class="small text-muted"></td>
+                </tr>
+                
+                <tr>
+                    <td>#6</td>
+                    <td>2026-11-24T09:53:18.425Z</td>
+                    <td class="fw-bold text-primary">DASHBOARD_VIEW</td>
+                    <td>officer</td>
+                    <td>
+                        <span class="badge bg-success">Success</span>
+                    </td>
+                    <td>127.0.0.1</td>
+                    <td>/officer/dashboard</td>
+                    <td class="small text-muted">Filters: {&#39;date_from&#39;: &#39;&#39;, &#39;date_to&#39;: &#39;&#39;, &#39;class_id&#39;: &#39;&#39;, &#39;section_id&#39;: &#39;&#39;}</td>
+                </tr>
+                
+                <tr>
+                    <td>#5</td>
+                    <td>2026-11-24T09:53:18.391Z</td>
+                    <td class="fw-bold text-primary">LOGIN_SUCCESS</td>
+                    <td>officer</td>
+                    <td>
+                        <span class="badge bg-success">Success</span>
+                    </td>
+                    <td>127.0.0.1</td>
+                    <td>/login</td>
+                    <td class="small text-muted"></td>
+                </tr>
+                
+                <tr>
+                    <td>#4</td>
+                    <td>2026-11-24T09:53:17.233Z</td>
+                    <td class="fw-bold text-primary">MODEL_INFERENCE</td>
+                    <td>farmer</td>
+                    <td>
+                        <span class="badge bg-success">Success</span>
+                    </td>
+                    <td>127.0.0.1</td>
+                    <td>/api/v1/predict</td>
+                    <td class="small text-muted">Class: MLN, Conf: 1.0000, OOD: False</td>
+                </tr>
+                
+                <tr>
+                    <td>#3</td>
+                    <td>2026-11-24T09:53:16.926Z</td>
+                    <td class="fw-bold text-primary">MODEL_INFERENCE</td>
+                    <td>farmer</td>
+                    <td>
+                        <span class="badge bg-success">Success</span>
+                    </td>
+                    <td>127.0.0.1</td>
+                    <td>/api/v1/predict</td>
+                    <td class="small text-muted">Class: MSV, Conf: 0.9990, OOD: False</td>
+                </tr>
+                
+                <tr>
+                    <td>#2</td>
+                    <td>2026-11-24T09:53:16.519Z</td>
+                    <td class="fw-bold text-primary">MODEL_INFERENCE</td>
+                    <td>farmer</td>
+                    <td>
+                        <span class="badge bg-success">Success</span>
+                    </td>
+                    <td>127.0.0.1</td>
+                    <td>/farmer/dashboard</td>
+                    <td class="small text-muted">Class: Healthy, Conf: 0.9438, OOD: False</td>
+                </tr>
+                
+                <tr>
+                    <td>#1</td>
+                    <td>2026-11-24T09:53:13.088Z</td>
+                    <td class="fw-bold text-primary">LOGIN_SUCCESS</td>
+                    <td>farmer</td>
+                    <td>
+                        <span class="badge bg-success">Success</span>
+                    </td>
+                    <td>127.0.0.1</td>
+                    <td>/login</td>
+                    <td class="small text-muted"></td>
+                </tr>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</main>
+
+<footer class="app-footer">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span>&copy; 2026 Maize Disease Diagnostic System</span>
+        <span>Liwaladzi, Nkhotakota District</span>
+    </div>
+</footer>
+
+<script src="http://127.0.0.1:5058/static/vendor/bootstrap.bundle.min.js"></script>
+<script src="http://127.0.0.1:5058/static/js/app.js" defer></script>
+
+<script>window.addEventListener('load',function(){var h=Array.from(document.querySelectorAll('h5')).find(function(e){return /log/i.test(e.textContent);});if(h){h.scrollIntoView();}});</script></body>
+</html>

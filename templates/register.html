@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t('register.title') }} - {{ t('app.name') }}{% endblock %}
 {% block content %}
+{% from '_macros.html' import password_field with context %}
 <div class="row justify-content-center">
     <div class="col-lg-7 col-md-9">
         <div class="app-card">
@@ -39,13 +40,11 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold" for="password">{{ t('register.password') }}</label>
-                        <input type="password" id="password" name="password" class="form-control"
-                               autocomplete="new-password" minlength="12" required>
+                        {{ password_field("password", "password", autocomplete="new-password", minlength=12) }}
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold" for="confirm_password">{{ t('register.confirm') }}</label>
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-control"
-                               autocomplete="new-password" minlength="12" required>
+                        {{ password_field("confirm_password", "confirm_password", autocomplete="new-password", minlength=12) }}
                     </div>
                 </div>
                 <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-4">{{ t('register.submit') }}</button>

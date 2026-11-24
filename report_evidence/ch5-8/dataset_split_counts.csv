@@ -1,0 +1,13 @@
+Split,Class,Images
+train,Downy_Mildew,1750
+train,Healthy,3470
+train,MLN,1750
+train,MSV,1750
+val,Downy_Mildew,375
+val,Healthy,749
+val,MLN,375
+val,MSV,375
+test,Downy_Mildew,375
+test,Healthy,748
+test,MLN,375
+test,MSV,375

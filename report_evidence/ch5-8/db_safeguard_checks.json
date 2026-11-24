@@ -1,0 +1,100 @@
+{
+  "generated_at": "2026-11-24T09:48:14.912130+00:00",
+  "schema": "maize_schema.sql",
+  "method": "pytest tests/test_db_safeguards.py -q; PRAGMA foreign_keys=ON",
+  "python": "3.13.14",
+  "sqlite": "3.50.4",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "working_directory": "C:\\Users\\Rexious Huka\\maize_disease_system",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "DB-01",
+      "check": "Bootstrap first administrator",
+      "expected": "Allowed",
+      "actual": "Allowed",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-02",
+      "check": "Self-registered farmer",
+      "expected": "Allowed",
+      "actual": "Allowed",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-03",
+      "check": "Officer without creator",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-04",
+      "check": "Self-registered administrator after the first",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-05",
+      "check": "Officer created by an administrator",
+      "expected": "Allowed",
+      "actual": "Allowed",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-06",
+      "check": "Insert a log entry",
+      "expected": "Allowed",
+      "actual": "Allowed",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-07",
+      "check": "Update a log entry",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-08",
+      "check": "Delete a log entry",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-09",
+      "check": "User with neither e-mail nor phone",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-10",
+      "check": "Probability above 1",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-11",
+      "check": "Duplicate username in different letter case",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    },
+    {
+      "id": "DB-12",
+      "check": "Diagnosis for a user that does not exist",
+      "expected": "Blocked",
+      "actual": "Blocked",
+      "status": "Pass"
+    }
+  ]
+}
